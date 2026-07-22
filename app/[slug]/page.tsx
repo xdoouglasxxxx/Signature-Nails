@@ -7,6 +7,7 @@ import {
   Instagram, MapPin, Scissors, ShieldCheck, Globe, Send,
 } from "lucide-react"
 import { brl, toMin, minToHHMM, toISO, DEFAULT_WH, cn } from "@/lib/utils"
+import { statusPlano } from "@/lib/plan"
 
 export default function StudioPage({ params }: { params: { slug: string } }) {
   const supabase = createClient()
@@ -54,7 +55,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     ;(async () => {
       const { data: s } = await supabase
         .from("studios")
-        .select("id, slug, name, specialty, bio, specialties, city, address, phone, instagram, tiktok, website, avatar_url, cover_url, hero_video_url, working_hours, slot_interval_minutes")
+        .select("id, slug, name, specialty, bio, specialties, city, address, phone, instagram, tiktok, website, avatar_url, cover_url, hero_video_url, working_hours, slot_interval_minutes, plan, plan_until, created_at")
         .eq("slug", params.slug)
         .maybeSingle()
       if (!s) { setNaoEncontrado(true); return }
@@ -81,10 +82,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     setHorario(null)
     setCarregandoSlots(true)
     supabase
-      .from("horarios_ocupados")
-      .select("start_time, end_time")
-      .eq("studio_id", studio.id)
-      .eq("date", diaSel.iso)
+      .rpc("horarios_ocupados", { p_studio: studio.id, p_data: diaSel.iso })
       .then(({ data }) => {
         if (!ativo) return
         setOcupados((data || []).map((r: any) => ({ ini: toMin(r.start_time.slice(0, 5)), fim: toMin(r.end_time.slice(0, 5)) })))
@@ -143,6 +141,8 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
         setHorario(null)
       } else if (m.includes("horario_passado") || m.includes("data_passada")) {
         setErro("Esse horário já passou. Escolha um horário futuro.")
+      } else if (m.includes("assinatura_expirada")) {
+        setErro("O agendamento online está temporariamente indisponível. Chame no WhatsApp!")
       } else if (m.includes("dia_fechado") || m.includes("fora_do_horario")) {
         setErro("O studio não atende nesse dia/horário.")
       } else {
@@ -183,6 +183,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     )
 
   const iniciais = studio.name.split(" ").map((p: string) => p[0]).slice(0, 2).join("").toUpperCase()
+  const assinaturaExpirada = statusPlano(studio).status === "expirado"
 
   return (
     <main className="min-h-screen pb-24">
@@ -312,7 +313,19 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
       {/* AGENDAR */}
       <section className="max-w-2xl mx-auto px-4 py-10" id="agendar">
         <h2 className="font-serif text-2xl font-semibold text-center mb-6">Agende seu horário</h2>
-        {confirmado ? (
+        {assinaturaExpirada ? (
+          <div className="bg-white rounded-3xl border border-gold/20 p-8 text-center">
+            <p className="font-serif text-xl font-semibold">Agendamento online em pausa 💤</p>
+            <p className="text-sm text-navy/60 mt-2">
+              No momento, agende diretamente pelo WhatsApp — respondo rapidinho!
+            </p>
+            {waNumber && (
+              <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#25D366] text-white text-sm font-bold">
+                <MessageCircle className="w-4 h-4" /> CHAMAR NO WHATSAPP
+              </a>
+            )}
+          </div>
+        ) : confirmado ? (
           <div className="bg-white rounded-3xl border border-gold/20 p-8 text-center shadow-[0_10px_30px_rgba(10,31,68,0.06)]">
             <div className="w-16 h-16 rounded-full gold-gradient flex items-center justify-center mx-auto">
               <Check className="w-8 h-8 text-navy" />
@@ -559,7 +572,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
       </footer>
 
       {/* CTA fixo */}
-      {!confirmado && (
+      {!confirmado && !assinaturaExpirada && (
         <div className="fixed bottom-4 left-4 right-4 z-40 max-w-2xl mx-auto">
           <a
             href="#agendar"
