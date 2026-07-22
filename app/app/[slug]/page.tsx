@@ -335,19 +335,13 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
         ) : (
           <div className="bg-white rounded-3xl border border-gold/15 p-5 shadow-[0_10px_30px_rgba(10,31,68,0.06)] space-y-6">
             {/* serviço escolhido */}
-            {servico ? (
+            {servico && (
               <div className="rounded-2xl bg-navy text-white px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold">{servico.name}</p>
                   <p className="text-xs text-white/60">{brl(servico.price)} • {servico.duration_minutes} min</p>
                 </div>
                 <a href="#servicos" className="text-xs text-gold font-semibold">TROCAR</a>
-              </div>
-            ) : (
-              <div className="rounded-2xl bg-cream border border-gold/25 px-4 py-3 text-sm text-navy/70 text-center">
-                {servicos.length === 0
-                  ? "Os serviços deste studio ainda não foram publicados — em breve você poderá agendar por aqui. 💅"
-                  : "Escolha um serviço acima para agendar."}
               </div>
             )}
 
