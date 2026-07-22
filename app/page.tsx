@@ -34,25 +34,33 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 pt-14 pb-20 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-gold/30 text-xs tracking-widest text-gold font-semibold mb-6">
-          <Sparkles className="w-3.5 h-3.5" /> FEITO PARA NAIL DESIGNERS
+      {/* Hero com vídeo */}
+      <section className="relative bg-navy text-white overflow-hidden">
+        <video
+          autoPlay muted loop playsInline preload="metadata"
+          src="/demo-hero.mp4"
+          className="absolute inset-0 w-full h-full object-cover opacity-35"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/70 via-navy/60 to-navy" />
+        <div className="relative max-w-5xl mx-auto px-6 pt-20 pb-24 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-goldlight/30 text-xs tracking-widest text-goldlight font-semibold mb-6 backdrop-blur">
+            <Sparkles className="w-3.5 h-3.5" /> FEITO PARA NAIL DESIGNERS
+          </div>
+          <h1 className="font-serif text-4xl md:text-6xl font-semibold leading-[1.05]">
+            Sua agenda cheia,<br />
+            <span className="shimmer">sem novela no direct.</span>
+          </h1>
+          <p className="mt-6 text-white/75 max-w-xl mx-auto leading-relaxed">
+            Página profissional + agendamento online em tempo real + painel completo.
+            Suas clientes agendam em 30 segundos, você gerencia tudo do celular.
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/cadastro" className="h-13 px-8 py-3.5 rounded-full gold-gradient text-navy font-bold text-sm tracking-wide shadow-[0_10px_30px_rgba(177,139,94,0.5)] inline-flex items-center gap-2 hover:scale-[1.02] transition-transform">
+              COMEÇAR AGORA — É GRÁTIS <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <p className="mt-3 text-xs text-white/50">Sem cartão de crédito • Pronto em 5 minutos</p>
         </div>
-        <h1 className="font-serif text-4xl md:text-6xl font-semibold leading-[1.05]">
-          Sua agenda cheia,<br />
-          <span className="shimmer">sem novela no direct.</span>
-        </h1>
-        <p className="mt-6 text-navy/70 max-w-xl mx-auto leading-relaxed">
-          Página profissional + agendamento online em tempo real + painel completo.
-          Suas clientes agendam em 30 segundos, você gerencia tudo do celular.
-        </p>
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link href="/cadastro" className="h-13 px-8 py-3.5 rounded-full gold-gradient text-navy font-bold text-sm tracking-wide shadow-[0_10px_30px_rgba(201,168,108,0.4)] inline-flex items-center gap-2 hover:scale-[1.02] transition-transform">
-            COMEÇAR AGORA — É GRÁTIS <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
-        <p className="mt-3 text-xs text-navy/50">Sem cartão de crédito • Pronto em 5 minutos</p>
       </section>
 
       {/* Features */}

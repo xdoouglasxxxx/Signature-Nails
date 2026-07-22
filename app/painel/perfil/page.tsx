@@ -49,6 +49,25 @@ export default function PerfilPage() {
     refresh()
   }
 
+  const uploadVideo = async (file: File | null) => {
+    if (!file || !file.type.startsWith("video/")) return
+    if (file.size > 40 * 1024 * 1024) { setErro("O vídeo deve ter no máximo 40MB. Dica: vídeos de 10-20s são ideais."); return }
+    setErro(""); setUploading("video" as any)
+    const ext = file.name.split(".").pop() || "mp4"
+    const path = `${studio.id}/perfil/hero-${Date.now()}.${ext}`
+    const { error: upErr } = await supabase.storage.from("media").upload(path, file, { cacheControl: "3600" })
+    if (upErr) { setErro("Falha no upload do vídeo."); setUploading(null); return }
+    const { data: pub } = supabase.storage.from("media").getPublicUrl(path)
+    await supabase.from("studios").update({ hero_video_url: pub.publicUrl }).eq("id", studio.id)
+    setUploading(null)
+    refresh()
+  }
+
+  const removerVideo = async () => {
+    await supabase.from("studios").update({ hero_video_url: null }).eq("id", studio.id)
+    refresh()
+  }
+
   const salvar = async () => {
     setErro("")
     const phone = form.phone.replace(/\D/g, "")
@@ -127,6 +146,34 @@ export default function PerfilPage() {
             </div>
             <p className="text-xs text-center text-navy/60 mt-1.5">Capa</p>
           </label>
+        </div>
+        <div className="mt-4 pt-4 border-t border-gold/10">
+          <p className="text-sm font-bold mb-2">Vídeo de abertura (opcional)</p>
+          {studio.hero_video_url ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <video src={studio.hero_video_url} muted loop autoPlay playsInline className="w-28 h-40 object-cover rounded-2xl border border-gold/20" />
+              <div className="space-y-2">
+                <p className="text-xs text-navy/60 max-w-[220px]">Este vídeo toca no topo da sua página.</p>
+                <button onClick={removerVideo} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white border border-red-200 text-red-600">
+                  Remover vídeo
+                </button>
+              </div>
+            </div>
+          ) : (
+            <label className="cursor-pointer block">
+              <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={(e) => uploadVideo(e.target.files?.[0] || null)} />
+              <div className="h-20 rounded-2xl border-2 border-dashed border-gold/40 bg-cream flex items-center justify-center">
+                {(uploading as any) === "video" ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-gold" />
+                ) : (
+                  <span className="text-xs text-navy/60 text-center px-4">
+                    🎬 Enviar vídeo de apresentação (MP4, até 40MB)<br />
+                    <span className="text-navy/40">Sem vídeo, sua página usa o vídeo padrão da plataforma</span>
+                  </span>
+                )}
+              </div>
+            </label>
+          )}
         </div>
       </div>
 

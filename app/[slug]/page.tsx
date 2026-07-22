@@ -54,7 +54,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     ;(async () => {
       const { data: s } = await supabase
         .from("studios")
-        .select("id, slug, name, specialty, bio, specialties, city, address, phone, instagram, tiktok, website, avatar_url, cover_url, working_hours, slot_interval_minutes")
+        .select("id, slug, name, specialty, bio, specialties, city, address, phone, instagram, tiktok, website, avatar_url, cover_url, hero_video_url, working_hours, slot_interval_minutes")
         .eq("slug", params.slug)
         .maybeSingle()
       if (!s) { setNaoEncontrado(true); return }
@@ -188,11 +188,19 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     <main className="min-h-screen pb-24">
       {/* HERO */}
       <section className="relative bg-navy text-white overflow-hidden">
-        {studio.cover_url && (
+        <video
+          key={studio.hero_video_url || "demo"}
+          autoPlay muted loop playsInline preload="metadata"
+          src={studio.hero_video_url || "/demo-hero.mp4"}
+          poster={studio.cover_url || undefined}
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
+          onError={(e) => { e.currentTarget.style.display = "none" }}
+        />
+        {!studio.hero_video_url && studio.cover_url && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={studio.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+          <img src={studio.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25 -z-10" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/80 to-navy" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/75 to-navy" />
         <div className="relative max-w-2xl mx-auto px-6 pt-14 pb-16 text-center">
           <div className="w-24 h-24 rounded-full p-[3px] gold-gradient mx-auto shadow-[0_10px_30px_rgba(201,168,108,0.4)]">
             {studio.avatar_url ? (
@@ -327,13 +335,19 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
         ) : (
           <div className="bg-white rounded-3xl border border-gold/15 p-5 shadow-[0_10px_30px_rgba(10,31,68,0.06)] space-y-6">
             {/* serviço escolhido */}
-            {servico && (
+            {servico ? (
               <div className="rounded-2xl bg-navy text-white px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold">{servico.name}</p>
                   <p className="text-xs text-white/60">{brl(servico.price)} • {servico.duration_minutes} min</p>
                 </div>
                 <a href="#servicos" className="text-xs text-gold font-semibold">TROCAR</a>
+              </div>
+            ) : (
+              <div className="rounded-2xl bg-cream border border-gold/25 px-4 py-3 text-sm text-navy/70 text-center">
+                {servicos.length === 0
+                  ? "Os serviços deste studio ainda não foram publicados — em breve você poderá agendar por aqui. 💅"
+                  : "Escolha um serviço acima para agendar."}
               </div>
             )}
 
