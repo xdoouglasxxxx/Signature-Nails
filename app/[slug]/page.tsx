@@ -188,9 +188,17 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
   // Studio com assinatura vencida: página suspensa por completo
   if (assinaturaExpirada)
     return (
-      <main className="min-h-screen bg-navy text-white flex items-center justify-center px-6">
-        <div className="text-center max-w-sm">
-          <div className="w-20 h-20 rounded-full p-[3px] gold-gradient mx-auto">
+      <main className="relative min-h-screen bg-navy text-white flex items-center justify-center px-6 overflow-hidden">
+        <video
+          autoPlay muted loop playsInline preload="metadata"
+          src="/demo-hero.mp4"
+          poster="/demo-hero-poster.jpg"
+          className="absolute inset-0 w-full h-full object-cover opacity-25"
+          onError={(e) => { e.currentTarget.style.display = "none" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/70 via-navy/80 to-navy" />
+        <div className="relative text-center max-w-sm">
+          <div className="w-20 h-20 rounded-full p-[3px] gold-gradient mx-auto shadow-[0_10px_30px_rgba(177,139,94,0.4)]">
             <div className="w-full h-full rounded-full bg-navy flex items-center justify-center font-serif text-2xl font-bold text-goldlight">
               {iniciais}
             </div>
