@@ -11,7 +11,7 @@ export const PLANO = {
 }
 
 // Sua chave Pix (CPF, email, telefone ou aleatória)
-export const PIX_KEY = "SUA-CHAVE-PIX-AQUI"
+export const PIX_KEY = "xdoouglasxxxx@gmail.com"
 
 // Seu WhatsApp de suporte/vendas (DDI+DDD+número, só dígitos)
 export const WHATS_SUPORTE = "5541999003524"
