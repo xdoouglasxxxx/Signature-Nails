@@ -3,12 +3,13 @@
 import { createClient } from "@/lib/supabase"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   LayoutDashboard, Calendar, Clock, Images, Users, Scissors,
-  User, MessageSquareQuote, LogOut, Menu, X, Sparkles,
+  User, MessageSquareQuote, LogOut, Menu, X, Sparkles, Crown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { statusPlano, type StatusPlano } from "@/lib/plan"
 
 const MENU = [
   { label: "Dashboard", href: "/painel", icon: LayoutDashboard },
@@ -19,12 +20,26 @@ const MENU = [
   { label: "Depoimentos", href: "/painel/depoimentos", icon: MessageSquareQuote },
   { label: "Clientes", href: "/painel/clientes", icon: Users },
   { label: "Perfil", href: "/painel/perfil", icon: User },
+  { label: "Assinatura", href: "/painel/assinatura", icon: Crown },
 ]
 
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const [aberto, setAberto] = useState(false)
+  const [plano, setPlano] = useState<StatusPlano | null>(null)
+
+  useEffect(() => {
+    ;(async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from("studios").select("plan, plan_until, created_at")
+        .eq("owner_id", user.id).maybeSingle()
+      if (data) setPlano(statusPlano(data))
+    })()
+  }, [pathname])
 
   const sair = async () => {
     const supabase = createClient()
@@ -32,6 +47,8 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
     router.push("/login")
     router.refresh()
   }
+
+  const bloqueado = plano?.status === "expirado" && pathname !== "/painel/assinatura"
 
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
     <>
@@ -95,7 +112,36 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
           </div>
         )}
 
-        <main className="flex-1 p-4 lg:p-8 max-w-4xl w-full mx-auto">{children}</main>
+        {/* banner do trial */}
+        {plano?.status === "trial" && (
+          <Link href="/painel/assinatura" className="block bg-navy text-white text-center text-xs font-semibold py-2.5 px-4 hover:bg-navy/90">
+            ✨ Teste grátis: {plano.diasRestantes} dia{plano.diasRestantes === 1 ? "" : "s"} restante{plano.diasRestantes === 1 ? "" : "s"} —{" "}
+            <span className="text-goldlight underline">garanta o preço de fundadora</span>
+          </Link>
+        )}
+
+        <main className="flex-1 p-4 lg:p-8 max-w-4xl w-full mx-auto">
+          {bloqueado ? (
+            <div className="pt-10 text-center max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-full gold-gradient flex items-center justify-center mx-auto">
+                <Crown className="w-8 h-8 text-navy" />
+              </div>
+              <h2 className="font-serif text-2xl font-semibold mt-5">Seu teste grátis terminou</h2>
+              <p className="text-sm text-navy/60 mt-2 leading-relaxed">
+                Sua página continua no ar, mas os agendamentos online estão pausados.
+                Ative sua assinatura para voltar a receber clientes — leva 2 minutos.
+              </p>
+              <Link
+                href="/painel/assinatura"
+                className="mt-6 inline-flex items-center gap-2 px-8 py-3.5 rounded-full gold-gradient text-navy font-bold text-sm tracking-wide"
+              >
+                <Crown className="w-4 h-4" /> ATIVAR ASSINATURA
+              </Link>
+            </div>
+          ) : (
+            children
+          )}
+        </main>
       </div>
     </div>
   )
