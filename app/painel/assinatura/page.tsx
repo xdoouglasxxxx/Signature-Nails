@@ -40,7 +40,9 @@ export default function AssinaturaPage() {
         <p className="text-sm text-navy/60 mt-1">
           {plano.status === "ativo" && "Sua assinatura está ativa. Obrigada por fazer parte! 💛"}
           {plano.status === "trial" && `Você está no teste grátis — ${plano.diasRestantes} dia${plano.diasRestantes === 1 ? "" : "s"} restante${plano.diasRestantes === 1 ? "" : "s"}.`}
-          {plano.status === "expirado" && "Seu período de teste terminou. Assine para reativar os agendamentos."}
+          {plano.status === "expirado" && (studio.plan === "trial"
+            ? "Seu período de teste terminou. Assine para reativar sua página."
+            : "Sua assinatura venceu. Renove para reativar sua página.")}
         </p>
       </div>
 
@@ -65,7 +67,7 @@ export default function AssinaturaPage() {
           {plano.status === "expirado" && (
             <div className="rounded-2xl bg-amber-50 border border-amber-300 px-4 py-3 text-sm text-amber-800 flex items-start gap-2">
               <Clock className="w-4 h-4 mt-0.5 shrink-0" />
-              Sua página continua no ar, mas os agendamentos online estão pausados até a assinatura ser ativada.
+              Sua página está temporariamente indisponível para as clientes até a assinatura ser ativada.
             </div>
           )}
 

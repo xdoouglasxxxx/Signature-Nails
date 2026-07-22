@@ -28,6 +28,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname()
   const [aberto, setAberto] = useState(false)
   const [plano, setPlano] = useState<StatusPlano | null>(null)
+  const [tipoPlano, setTipoPlano] = useState<string>("trial")
 
   useEffect(() => {
     ;(async () => {
@@ -37,7 +38,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       const { data } = await supabase
         .from("studios").select("plan, plan_until, created_at")
         .eq("owner_id", user.id).maybeSingle()
-      if (data) setPlano(statusPlano(data))
+      if (data) { setPlano(statusPlano(data)); setTipoPlano(data.plan) }
     })()
   }, [pathname])
 
@@ -126,10 +127,13 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
               <div className="w-16 h-16 rounded-full gold-gradient flex items-center justify-center mx-auto">
                 <Crown className="w-8 h-8 text-navy" />
               </div>
-              <h2 className="font-serif text-2xl font-semibold mt-5">Seu teste grátis terminou</h2>
+              <h2 className="font-serif text-2xl font-semibold mt-5">
+                {tipoPlano === "trial" ? "Seu teste grátis terminou" : "Sua assinatura venceu"}
+              </h2>
               <p className="text-sm text-navy/60 mt-2 leading-relaxed">
-                Sua página continua no ar, mas os agendamentos online estão pausados.
-                Ative sua assinatura para voltar a receber clientes — leva 2 minutos.
+                Sua página ficou temporariamente indisponível para as clientes.
+                {tipoPlano === "trial" ? " Ative sua assinatura" : " Renove"} para voltar a receber
+                agendamentos — leva 2 minutos.
               </p>
               <Link
                 href="/painel/assinatura"

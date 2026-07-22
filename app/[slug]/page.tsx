@@ -185,6 +185,26 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
   const iniciais = studio.name.split(" ").map((p: string) => p[0]).slice(0, 2).join("").toUpperCase()
   const assinaturaExpirada = statusPlano(studio).status === "expirado"
 
+  // Studio com assinatura vencida: página suspensa por completo
+  if (assinaturaExpirada)
+    return (
+      <main className="min-h-screen bg-navy text-white flex items-center justify-center px-6">
+        <div className="text-center max-w-sm">
+          <div className="w-20 h-20 rounded-full p-[3px] gold-gradient mx-auto">
+            <div className="w-full h-full rounded-full bg-navy flex items-center justify-center font-serif text-2xl font-bold text-goldlight">
+              {iniciais}
+            </div>
+          </div>
+          <h1 className="font-serif text-2xl font-semibold mt-6">{studio.name}</h1>
+          <p className="text-sm text-white/60 mt-3 leading-relaxed">
+            Esta página está temporariamente indisponível.
+            <br />Volte em breve! 💅✨
+          </p>
+          <p className="mt-10 text-[11px] text-white/30">Signature Nails</p>
+        </div>
+      </main>
+    )
+
   return (
     <main className="min-h-screen pb-24">
       {/* HERO */}
@@ -313,19 +333,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
       {/* AGENDAR */}
       <section className="max-w-2xl mx-auto px-4 py-10" id="agendar">
         <h2 className="font-serif text-2xl font-semibold text-center mb-6">Agende seu horário</h2>
-        {assinaturaExpirada ? (
-          <div className="bg-white rounded-3xl border border-gold/20 p-8 text-center">
-            <p className="font-serif text-xl font-semibold">Agendamento online em pausa 💤</p>
-            <p className="text-sm text-navy/60 mt-2">
-              No momento, agende diretamente pelo WhatsApp — respondo rapidinho!
-            </p>
-            {waNumber && (
-              <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#25D366] text-white text-sm font-bold">
-                <MessageCircle className="w-4 h-4" /> CHAMAR NO WHATSAPP
-              </a>
-            )}
-          </div>
-        ) : confirmado ? (
+        {confirmado ? (
           <div className="bg-white rounded-3xl border border-gold/20 p-8 text-center shadow-[0_10px_30px_rgba(10,31,68,0.06)]">
             <div className="w-16 h-16 rounded-full gold-gradient flex items-center justify-center mx-auto">
               <Check className="w-8 h-8 text-navy" />
@@ -572,7 +580,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
       </footer>
 
       {/* CTA fixo */}
-      {!confirmado && !assinaturaExpirada && (
+      {!confirmado && (
         <div className="fixed bottom-4 left-4 right-4 z-40 max-w-2xl mx-auto">
           <a
             href="#agendar"
