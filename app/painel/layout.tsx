@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import {
   LayoutDashboard, Calendar, Clock, Images, Users, UserPlus, Scissors,
-  User, MessageSquareQuote, LogOut, Menu, X, Sparkles, Crown,
+  User, MessageSquareQuote, LogOut, Menu, X, Sparkles, Crown, Bell, BellRing,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { statusPlano, type StatusPlano } from "@/lib/plan"
@@ -30,6 +30,8 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   const [aberto, setAberto] = useState(false)
   const [plano, setPlano] = useState<StatusPlano | null>(null)
   const [tipoPlano, setTipoPlano] = useState<string>("trial")
+  const [studioId, setStudioId] = useState<string | null>(null)
+  const [push, setPush] = useState<"nao-suportado" | "off" | "on" | "pedindo">("nao-suportado")
 
   useEffect(() => {
     ;(async () => {
@@ -37,11 +39,69 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const { data } = await supabase
-        .from("studios").select("plan, plan_until, created_at")
+        .from("studios").select("id, plan, plan_until, created_at")
         .eq("owner_id", user.id).maybeSingle()
-      if (data) { setPlano(statusPlano(data)); setTipoPlano(data.plan) }
+      if (data) { setPlano(statusPlano(data)); setTipoPlano(data.plan); setStudioId(data.id) }
     })()
   }, [pathname])
+
+  // estado do push (suporte + inscrição existente)
+  useEffect(() => {
+    ;(async () => {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return
+      setPush("off")
+      try {
+        const reg = await navigator.serviceWorker.ready
+        const sub = await reg.pushManager.getSubscription()
+        if (sub) setPush("on")
+      } catch {}
+    })()
+  }, [])
+
+  const b64ToUint8 = (base64: string) => {
+    const padding = "=".repeat((4 - (base64.length % 4)) % 4)
+    const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"))
+    return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)))
+  }
+
+  const ativarPush = async () => {
+    if (!studioId || push === "on" || push === "pedindo") return
+    setPush("pedindo")
+    try {
+      const perm = await Notification.requestPermission()
+      if (perm !== "granted") { setPush("off"); return }
+      const reg = await navigator.serviceWorker.ready
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: b64ToUint8(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ""),
+      })
+      const json = sub.toJSON() as any
+      const supabase = createClient()
+      await supabase.from("push_subscriptions").upsert(
+        { studio_id: studioId, endpoint: json.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth },
+        { onConflict: "endpoint" },
+      )
+      setPush("on")
+    } catch {
+      setPush("off")
+    }
+  }
+
+  const BotaoPush = () => {
+    if (push === "nao-suportado") return null
+    return (
+      <button
+        onClick={ativarPush}
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors w-full",
+          push === "on" ? "text-emerald-700 bg-emerald-50" : "text-navy/60 hover:bg-cream hover:text-navy",
+        )}
+      >
+        {push === "on" ? <BellRing className="w-5 h-5 text-emerald-600" /> : <Bell className="w-5 h-5" />}
+        {push === "on" ? "Notificações ativas ✓" : push === "pedindo" ? "Ativando..." : "Ativar notificações"}
+      </button>
+    )
+  }
 
   const sair = async () => {
     const supabase = createClient()
@@ -85,6 +145,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
           <span className="font-serif text-lg font-bold">Signature</span>
         </div>
         <nav className="flex-1 space-y-1"><NavLinks /></nav>
+        <BotaoPush />
         <button onClick={sair} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-navy/60 hover:bg-red-50 hover:text-red-600">
           <LogOut className="w-5 h-5" /> Sair
         </button>
@@ -108,6 +169,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
         {aberto && (
           <div className="lg:hidden fixed inset-0 top-[65px] bg-white z-20 p-4 space-y-1 overflow-y-auto">
             <NavLinks onClick={() => setAberto(false)} />
+            <BotaoPush />
             <button onClick={sair} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-red-600">
               <LogOut className="w-5 h-5" /> Sair
             </button>

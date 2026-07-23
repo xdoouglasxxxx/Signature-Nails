@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import webpush from "web-push"
 
 export const runtime = "nodejs"
 
@@ -55,6 +56,37 @@ export async function POST(req: Request) {
         </div>
         <div style="background:#F8F0E4;color:#999;padding:12px 24px;font-size:11px">Signature — gestão e agendamento para beleza</div>
       </div>`
+
+    // ---- PUSH para os aparelhos do dono ----
+    try {
+      if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+        webpush.setVapidDetails(
+          "mailto:" + (process.env.NOTIF_FROM_EMAIL || "contato@signature.app"),
+          process.env.VAPID_PUBLIC_KEY,
+          process.env.VAPID_PRIVATE_KEY,
+        )
+        const { data: subs } = await admin
+          .from("push_subscriptions")
+          .select("id, endpoint, p256dh, auth")
+          .eq("studio_id", app.studio_id)
+        const payload = JSON.stringify({
+          title: "✦ Novo agendamento",
+          body: `${cliente?.name || "Cliente"} • ${servico?.name || ""}${prof?.name ? " com " + prof.name.split(" ")[0] : ""} • ${dia}/${mes} às ${hora}`,
+          url: "/painel/agenda",
+        })
+        await Promise.allSettled(
+          (subs || []).map((s) =>
+            webpush
+              .sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload)
+              .catch(async (err: any) => {
+                if (err?.statusCode === 404 || err?.statusCode === 410) {
+                  await admin.from("push_subscriptions").delete().eq("id", s.id)
+                }
+              }),
+          ),
+        )
+      }
+    } catch {}
 
     const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
