@@ -207,6 +207,14 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
       }
       return
     }
+    // avisa o estabelecimento por email (não bloqueia a confirmação)
+    if (data) {
+      fetch("/api/notificar-agendamento", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: data }),
+      }).catch(() => {})
+    }
     setConfirmado(true)
   }
 

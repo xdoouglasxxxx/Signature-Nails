@@ -32,3 +32,8 @@ body { @apply bg-cream text-navy font-sans; }
 @media (prefers-reduced-motion: reduce) {
   .shimmer, .animate-pulse, .animate-spin { animation: none; }
 }
+
+@keyframes slidein {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

@@ -37,6 +37,13 @@ export default function AgendaPage() {
   const [apps, setApps] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [toasts, setToasts] = useState<{ id: number; tipo: "ok" | "erro" | "aviso"; msg: string }[]>([])
+
+  const toast = (tipo: "ok" | "erro" | "aviso", msg: string) => {
+    const id = Date.now() + Math.random()
+    setToasts((prev) => [...prev, { id, tipo, msg }])
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000)
+  }
   const [equipe, setEquipe] = useState<any[]>([])
   const [filtroProf, setFiltroProf] = useState<string>("todas")
 
@@ -61,11 +68,19 @@ export default function AgendaPage() {
       .then(({ data }) => setEquipe(data || []))
   }, [studio]) // eslint-disable-line
 
+  const MSG_STATUS: Record<string, string> = {
+    confirmado: "Agendamento confirmado com sucesso! ✨",
+    pago: "Status alterado para Pago. 💰",
+    cancelado: "Agendamento cancelado — o horário já está livre na sua página.",
+  }
+
   const setStatus = async (id: string, status: string) => {
     setUpdating(id)
     const { error } = await supabase.from("appointments").update({ status }).eq("id", id)
-    if (!error) setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)))
     setUpdating(null)
+    if (error) { toast("erro", "Erro ao processar sua ação. Tente novamente."); return }
+    setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)))
+    toast(status === "cancelado" ? "aviso" : "ok", MSG_STATUS[status] || "Atualizado.")
   }
 
   const liberarAgora = async (app: any) => {
@@ -73,8 +88,10 @@ export default function AgendaPage() {
     const n = new Date()
     const hhmmss = `${String(n.getHours()).padStart(2, "0")}:${String(n.getMinutes()).padStart(2, "0")}:00`
     const { error } = await supabase.from("appointments").update({ end_time: hhmmss }).eq("id", app.id)
-    if (!error) setApps((prev) => prev.map((a) => (a.id === app.id ? { ...a, end_time: hhmmss } : a)))
     setUpdating(null)
+    if (error) { toast("erro", "Erro ao processar sua ação. Tente novamente."); return }
+    setApps((prev) => prev.map((a) => (a.id === app.id ? { ...a, end_time: hhmmss } : a)))
+    toast("ok", "Atendimento encerrado — horário liberado na agenda! ✂️")
   }
 
   const agoraHHMM = () => {
@@ -96,6 +113,24 @@ export default function AgendaPage() {
 
   return (
     <div className="space-y-6">
+      {/* toasts */}
+      <div className="fixed top-4 right-4 z-50 space-y-2 w-[calc(100%-2rem)] max-w-sm">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={cn(
+              "rounded-2xl px-4 py-3 text-sm font-medium shadow-xl border flex items-start gap-2 animate-[slidein_.25s_ease]",
+              t.tipo === "ok" && "bg-emerald-600 border-emerald-700 text-white",
+              t.tipo === "erro" && "bg-red-600 border-red-700 text-white",
+              t.tipo === "aviso" && "bg-amber-100 border-amber-300 text-amber-900",
+            )}
+          >
+            <span className="mt-0.5">{t.tipo === "ok" ? "✓" : t.tipo === "erro" ? "✕" : "!"}</span>
+            <span className="flex-1">{t.msg}</span>
+            <button onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))} className="opacity-60 hover:opacity-100">✕</button>
+          </div>
+        ))}
+      </div>
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl lg:text-3xl font-serif font-bold">Agenda</h1>
