@@ -32,8 +32,16 @@ export default function Cadastro() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 bg-navy">
-      <div className="w-full max-w-sm">
+    <main className="relative overflow-hidden min-h-screen flex items-center justify-center px-6 bg-navy">
+      <video
+        autoPlay muted loop playsInline preload="metadata"
+        src="/demo-hero.mp4"
+        poster="/demo-hero-poster.jpg"
+        className="absolute inset-0 w-full h-full object-cover opacity-30"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/70 to-navy" />
+
+      <div className="relative w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-14 h-14 rounded-full gold-gradient flex items-center justify-center mx-auto mb-3">
             <Sparkles className="w-6 h-6 text-navy" />
