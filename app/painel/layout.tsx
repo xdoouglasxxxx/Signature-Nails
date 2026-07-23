@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import {
   LayoutDashboard, Calendar, Clock, Images, Users, UserPlus, Scissors,
-  User, MessageSquareQuote, LogOut, Menu, X, Sparkles, Crown, Bell, BellRing,
+  User, MessageSquareQuote, LogOut, Menu, X, Sparkles, Crown, Bell, BellRing, Wallet,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { statusPlano, type StatusPlano } from "@/lib/plan"
@@ -16,6 +16,7 @@ const MENU = [
   { label: "Agenda", href: "/painel/agenda", icon: Calendar },
   { label: "Serviços", href: "/painel/servicos", icon: Scissors },
   { label: "Equipe", href: "/painel/equipe", icon: UserPlus },
+  { label: "Financeiro", href: "/painel/financeiro", icon: Wallet },
   { label: "Horários", href: "/painel/horarios", icon: Clock },
   { label: "Galeria", href: "/painel/galeria", icon: Images },
   { label: "Depoimentos", href: "/painel/depoimentos", icon: MessageSquareQuote },

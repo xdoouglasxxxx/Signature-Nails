@@ -29,6 +29,10 @@ export default function EquipePage() {
   const [form, setForm] = useState<any>(emptyForm)
   const [erro, setErro] = useState("")
   const [uploadingFoto, setUploadingFoto] = useState<string | null>(null)
+  const [filtroServ, setFiltroServ] = useState("")
+  const [novoServAberto, setNovoServAberto] = useState(false)
+  const [novoServ, setNovoServ] = useState({ nome: "", preco: "", duracao: "" })
+  const [salvandoServ, setSalvandoServ] = useState(false)
 
   const fetchAll = useCallback(async () => {
     if (!studio) return
@@ -71,6 +75,29 @@ export default function EquipePage() {
     })
   }
   const cancelEdit = () => { setEditingId(null); setForm(emptyForm); setErro("") }
+
+  const criarServico = async () => {
+    const nome = novoServ.nome.trim()
+    const preco = parseFloat(String(novoServ.preco).replace(",", "."))
+    const dur = parseInt(novoServ.duracao)
+    if (!nome || isNaN(preco) || preco <= 0 || isNaN(dur) || dur <= 0) {
+      setErro("Preencha nome, preço e duração do novo serviço.")
+      return
+    }
+    setErro(""); setSalvandoServ(true)
+    const { data, error } = await supabase
+      .from("services")
+      .insert({ studio_id: studio.id, name: nome, price: preco, duration_minutes: dur, sort_order: servicos.length })
+      .select("id, name")
+      .single()
+    setSalvandoServ(false)
+    if (error || !data) { setErro("Não foi possível criar o serviço."); return }
+    setServicos((prev) => [...prev, data])
+    setForm((f: any) => ({ ...f, servicos: [...f.servicos, data.id] }))
+    setNovoServ({ nome: "", preco: "", duracao: "" })
+    setNovoServAberto(false)
+    setFiltroServ("")
+  }
 
   const toggleServico = (sid: string) => {
     setForm((f: any) => ({
@@ -171,7 +198,7 @@ export default function EquipePage() {
       <p className="font-serif font-semibold">{editingId === "new" ? "Novo profissional" : "Editar profissional"}</p>
       <div className="grid sm:grid-cols-2 gap-3">
         <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nome" className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
-        <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Função (ex: Barbeiro, Cabeleireira...)" className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
+        <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Cargo / Função — ex: Barbeiro, Massagista" className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
       </div>
       <div>
         <label className="text-xs font-semibold text-navy/70">Comissão (%)</label>
@@ -179,16 +206,64 @@ export default function EquipePage() {
       </div>
 
       <div>
-        <p className="text-xs font-semibold text-navy/70 mb-2">Serviços que realiza</p>
-        <div className="flex flex-wrap gap-2">
-          {servicos.map((s) => (
-            <button key={s.id} onClick={() => toggleServico(s.id)}
-              className={cn("text-xs px-3 py-1.5 rounded-full border font-medium",
-                form.servicos.includes(s.id) ? "bg-navy text-white border-navy" : "bg-white border-navy/15 hover:border-gold")}>
-              {s.name}
-            </button>
-          ))}
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-semibold text-navy/70">Serviços que realiza</p>
+          <button
+            type="button"
+            onClick={() => { setNovoServAberto(!novoServAberto); setNovoServ({ nome: filtroServ, preco: "", duracao: "" }) }}
+            className="text-[11px] font-bold text-gold inline-flex items-center gap-1 hover:underline"
+          >
+            <Plus className="w-3 h-3" /> Criar novo serviço
+          </button>
         </div>
+
+        {novoServAberto && (
+          <div className="mb-3 bg-cream rounded-xl p-3 space-y-2 border border-gold/25">
+            <p className="text-[11px] font-bold text-navy/70">Novo serviço (já entra marcado para este profissional)</p>
+            <input value={novoServ.nome} onChange={(e) => setNovoServ({ ...novoServ, nome: e.target.value })} placeholder="Nome (ex: Massagem Relaxante)" className="w-full h-10 rounded-lg border border-navy/10 px-3 text-xs bg-white focus:outline-none focus:border-gold" />
+            <div className="flex gap-2">
+              <input value={novoServ.preco} onChange={(e) => setNovoServ({ ...novoServ, preco: e.target.value })} inputMode="decimal" placeholder="Preço (ex: 90)" className="flex-1 h-10 rounded-lg border border-navy/10 px-3 text-xs bg-white focus:outline-none focus:border-gold" />
+              <input value={novoServ.duracao} onChange={(e) => setNovoServ({ ...novoServ, duracao: e.target.value })} inputMode="numeric" placeholder="Duração (min)" className="flex-1 h-10 rounded-lg border border-navy/10 px-3 text-xs bg-white focus:outline-none focus:border-gold" />
+            </div>
+            <div className="flex gap-2">
+              <button type="button" onClick={criarServico} disabled={salvandoServ} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-navy text-white inline-flex items-center gap-1 disabled:opacity-60">
+                {salvandoServ ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Criar e marcar
+              </button>
+              <button type="button" onClick={() => setNovoServAberto(false)} className="text-[11px] font-semibold px-3 py-1.5 rounded-full bg-white border border-navy/10">Cancelar</button>
+            </div>
+          </div>
+        )}
+
+        {servicos.length > 5 && (
+          <input
+            value={filtroServ}
+            onChange={(e) => setFiltroServ(e.target.value)}
+            placeholder="Buscar serviço..."
+            className="w-full h-9 rounded-lg border border-navy/10 px-3 text-xs mb-2 focus:outline-none focus:border-gold"
+          />
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          {servicos
+            .filter((sv) => sv.name.toLowerCase().includes(filtroServ.toLowerCase()))
+            .map((sv) => (
+              <button key={sv.id} onClick={() => toggleServico(sv.id)}
+                className={cn("text-xs px-3 py-1.5 rounded-full border font-medium",
+                  form.servicos.includes(sv.id) ? "bg-navy text-white border-navy" : "bg-white border-navy/15 hover:border-gold")}>
+                {sv.name}
+              </button>
+            ))}
+        </div>
+
+        {filtroServ && servicos.filter((sv) => sv.name.toLowerCase().includes(filtroServ.toLowerCase())).length === 0 && (
+          <button
+            type="button"
+            onClick={() => { setNovoServAberto(true); setNovoServ({ nome: filtroServ, preco: "", duracao: "" }) }}
+            className="mt-2 text-xs text-gold font-semibold hover:underline"
+          >
+            Serviço não encontrado. Criar &quot;{filtroServ}&quot;?
+          </button>
+        )}
         <p className="text-[11px] text-navy/50 mt-1.5">Nenhum marcado = realiza todos os serviços.</p>
       </div>
 
