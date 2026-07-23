@@ -178,7 +178,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     if (temEquipe && !profissional) { setErro("Escolha quem vai te atender."); return }
 
     setEnviando(true)
-    const { error } = await supabase.rpc("criar_agendamento", {
+    const { data: novoId, error } = await supabase.rpc("criar_agendamento", {
       p_slug: params.slug,
       p_nome: nome.trim(),
       p_telefone: telefone.trim(),
@@ -207,12 +207,12 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
       }
       return
     }
-    // avisa o estabelecimento por email (não bloqueia a confirmação)
-    if (data) {
+    // avisa o estabelecimento (email + push) — não bloqueia a confirmação
+    if (novoId) {
       fetch("/api/notificar-agendamento", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id: data }),
+        body: JSON.stringify({ id: novoId }),
       }).catch(() => {})
     }
     setConfirmado(true)
