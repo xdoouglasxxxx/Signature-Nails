@@ -22,10 +22,10 @@ function mensagemWhats(app: any, dia: Date) {
   const data = format(dia, "dd/MM")
   const hora = app.start_time?.substring(0, 5)
   const msgs: any = {
-    pendente: `Olá ${nome}! 💅 Recebi seu agendamento de *${servico}* para ${data} às ${hora}. Já vou confirmar seu horário, tá bom? ✨`,
-    confirmado: `Olá ${nome}! Seu horário de *${servico}* está *CONFIRMADO* para ${data} às ${hora} 💅✨ Qualquer imprevisto é só me avisar. Te espero!`,
-    pago: `${nome}, obrigada pela visita! 💛 Quando quiser agendar o retoque de *${servico}*, é só me chamar! 💅`,
-    cancelado: `Olá ${nome}, sobre seu horário de *${servico}* do dia ${data} às ${hora}: infelizmente precisou ser cancelado. 🙏 Me chama pra remarcar!`,
+    pendente: `Olá ${nome}! ✨ Recebemos seu agendamento de *${servico}* para ${data} às ${hora}. Em breve confirmamos seu horário, tudo bem?`,
+    confirmado: `Olá ${nome}! Seu horário de *${servico}* está *CONFIRMADO* para ${data} às ${hora} ✅ Qualquer imprevisto é só avisar. Até lá!`,
+    pago: `${nome}, obrigado(a) pela visita! ✦ Foi um prazer te atender. Quando quiser agendar novamente, é só chamar.`,
+    cancelado: `Olá ${nome}, sobre seu horário de *${servico}* do dia ${data} às ${hora}: precisou ser cancelado. 🙏 Chama a gente para remarcar no melhor dia para você.`,
   }
   return msgs[app.status] || `Olá ${nome}!`
 }

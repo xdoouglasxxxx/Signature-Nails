@@ -137,7 +137,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
 
   const waNumber = (studio?.phone || "").replace(/\D/g, "")
   const linkWhats = `https://wa.me/${waNumber}?text=${encodeURIComponent(
-    `Olá! Quero agendar ${servico?.name || "um horário"} no dia ${diaSel.num}${horario ? ` às ${horario}` : ""}. Pode confirmar? 💅✨`,
+    `Olá! Quero agendar ${servico?.name || "um horário"} no dia ${diaSel.num}${horario ? ` às ${horario}` : ""}. Pode confirmar? ✦`,
   )}`
 
   async function confirmar() {
@@ -145,7 +145,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     if (!nome.trim()) { setErro("Digite seu nome para confirmar."); return }
     if (telefone.replace(/\D/g, "").length < 10) { setErro("Digite um WhatsApp válido com DDD."); return }
     if (!horario || !servico) { setErro("Escolha um serviço e um horário."); return }
-    if (temEquipe && !profissional) { setErro("Escolha a profissional para o atendimento."); return }
+    if (temEquipe && !profissional) { setErro("Escolha quem vai te atender."); return }
 
     setEnviando(true)
     const { error } = await supabase.rpc("criar_agendamento", {
@@ -167,7 +167,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
       } else if (m.includes("horario_passado") || m.includes("data_passada")) {
         setErro("Esse horário já passou. Escolha um horário futuro.")
       } else if (m.includes("profissional_invalida") || m.includes("profissional_nao_faz_servico")) {
-        setErro("Essa profissional não atende esse serviço. Escolha outra opção.")
+        setErro("Esse profissional não realiza esse serviço. Escolha outra opção.")
       } else if (m.includes("assinatura_expirada")) {
         setErro("O agendamento online está temporariamente indisponível. Chame no WhatsApp!")
       } else if (m.includes("dia_fechado") || m.includes("fora_do_horario")) {
@@ -197,8 +197,8 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center">
         <Sparkles className="w-8 h-8 text-gold" />
-        <h1 className="font-serif text-2xl font-semibold">Studio não encontrado</h1>
-        <p className="text-sm text-navy/60">Confira o link ou fale com a profissional.</p>
+        <h1 className="font-serif text-2xl font-semibold">Página não encontrada</h1>
+        <p className="text-sm text-navy/60">Confira o link ou fale com o estabelecimento.</p>
       </main>
     )
 
@@ -220,10 +220,10 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
           autoPlay muted loop playsInline preload="metadata"
           src="/demo-hero.mp4"
           poster="/demo-hero-poster.jpg"
-          className="absolute inset-0 w-full h-full object-cover opacity-25"
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
           onError={(e) => { e.currentTarget.style.display = "none" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/70 via-navy/80 to-navy" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/55 via-navy/65 to-navy" />
         <div className="relative text-center max-w-sm">
           <div className="w-20 h-20 rounded-full p-[3px] gold-gradient mx-auto shadow-[0_10px_30px_rgba(177,139,94,0.4)]">
             <div className="w-full h-full rounded-full bg-navy flex items-center justify-center font-serif text-2xl font-bold text-goldlight">
@@ -249,14 +249,14 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
           autoPlay muted loop playsInline preload="metadata"
           src={studio.hero_video_url || "/demo-hero.mp4"}
           poster={studio.cover_url || undefined}
-          className="absolute inset-0 w-full h-full object-cover opacity-30"
+          className="absolute inset-0 w-full h-full object-cover opacity-50"
           onError={(e) => { e.currentTarget.style.display = "none" }}
         />
         {!studio.hero_video_url && studio.cover_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={studio.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25 -z-10" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/75 to-navy" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/45 via-navy/55 to-navy" />
         <div className="relative max-w-2xl mx-auto px-6 pt-14 pb-16 text-center">
           <div className="w-24 h-24 rounded-full p-[3px] gold-gradient mx-auto shadow-[0_10px_30px_rgba(201,168,108,0.4)]">
             {studio.avatar_url ? (
@@ -269,9 +269,11 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
             )}
           </div>
           <h1 className="mt-5 font-serif text-3xl md:text-4xl font-semibold">{studio.name}</h1>
-          <p className="mt-1 text-xs tracking-[0.25em] text-gold font-semibold uppercase">
-            {studio.specialty || "Nail Designer"}
-          </p>
+          {studio.specialty && (
+            <p className="mt-1 text-xs tracking-[0.25em] text-gold font-semibold uppercase">
+              {studio.specialty}
+            </p>
+          )}
           {studio.city && (
             <p className="mt-3 text-sm text-white/60 flex items-center justify-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-gold" /> {studio.city}
@@ -402,7 +404,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
             ) : (
               <div className="rounded-2xl bg-cream border border-gold/25 px-4 py-3 text-sm text-navy/70 text-center">
                 {servicos.length === 0
-                  ? "Os serviços deste studio ainda não foram publicados — em breve você poderá agendar por aqui. 💅"
+                  ? "Os serviços deste espaço ainda não foram publicados — em breve você poderá agendar por aqui. ✦"
                   : "Escolha um serviço acima para agendar."}
               </div>
             )}
@@ -410,10 +412,10 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
             {/* profissional */}
             {temEquipe && (
               <div>
-                <p className="text-sm font-bold mb-2">Escolha a profissional</p>
+                <p className="text-sm font-bold mb-2">Escolha quem vai te atender</p>
                 {profsDoServico.length === 0 ? (
                   <p className="text-sm text-navy/60 bg-cream rounded-xl px-4 py-3 text-center">
-                    Nenhuma profissional disponível para este serviço.
+                    Nenhum profissional disponível para este serviço.
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
@@ -587,7 +589,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
         )}
         {depEnviado ? (
           <p className="text-center text-sm text-navy/60 bg-white rounded-2xl border border-gold/15 py-4">
-            Obrigada! Seu depoimento será publicado após aprovação. 💛
+            Recebemos seu depoimento! Será publicado após aprovação. 💛
           </p>
         ) : (
           <form onSubmit={enviarDepoimento} className="bg-white rounded-3xl border border-gold/15 p-5 space-y-3">

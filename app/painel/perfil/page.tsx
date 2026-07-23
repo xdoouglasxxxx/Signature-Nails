@@ -71,7 +71,7 @@ export default function PerfilPage() {
   const salvar = async () => {
     setErro("")
     const phone = form.phone.replace(/\D/g, "")
-    if (!form.name.trim()) { setErro("Digite o nome do studio."); return }
+    if (!form.name.trim()) { setErro("Digite o nome do seu espaço."); return }
     if (phone.length < 12) { setErro("WhatsApp: DDI + DDD + número (ex: 5541999998888)."); return }
     setSaving(true)
     const { error } = await supabase.from("studios").update({
@@ -96,15 +96,15 @@ export default function PerfilPage() {
     return <div className="flex justify-center pt-20"><div className="w-8 h-8 border-4 border-gold border-t-transparent rounded-full animate-spin" /></div>
 
   const CAMPOS = [
-    { key: "name", label: "Nome do studio", ph: "Maria Silva Nails" },
-    { key: "specialty", label: "Especialidade (título)", ph: "Nail Designer • Alongamentos" },
+    { key: "name", label: "Nome do seu espaço", ph: "Studio B Cabeleireiros" },
+    { key: "specialty", label: "Especialidade (título)", ph: "Barbearia • Salão • Studio de beleza" },
     { key: "city", label: "Cidade", ph: "Curitiba - PR" },
     { key: "address", label: "Endereço (para o mapa)", ph: "Rua das Flores, 100 - Centro, Curitiba" },
     { key: "phone", label: "WhatsApp (DDI+DDD+número)", ph: "5541999998888" },
-    { key: "instagram", label: "Instagram (sem @)", ph: "marianails" },
-    { key: "tiktok", label: "TikTok (sem @, opcional)", ph: "marianails" },
+    { key: "instagram", label: "Instagram (sem @)", ph: "studiob" },
+    { key: "tiktok", label: "TikTok (sem @, opcional)", ph: "studiob" },
     { key: "website", label: "Site (opcional)", ph: "https://..." },
-    { key: "specialties", label: "Especialidades (separadas por vírgula)", ph: "Alongamento em gel, Nail art, Blindagem" },
+    { key: "specialties", label: "Especialidades (separadas por vírgula)", ph: "Corte, Coloração, Barba, Alongamento" },
   ]
 
   return (

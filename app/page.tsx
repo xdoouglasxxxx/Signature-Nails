@@ -52,9 +52,9 @@ export default function Landing() {
           autoPlay muted loop playsInline preload="metadata"
           src="/demo-hero.mp4"
           poster="/demo-hero-poster.jpg"
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
+          className="absolute inset-0 w-full h-full object-cover opacity-55"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/80 via-navy/85 to-navy" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/50 via-navy/45 to-navy" />
         <div className="relative max-w-5xl mx-auto px-6 pt-20 pb-24 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-goldlight/30 text-[11px] tracking-[0.2em] text-goldlight font-semibold mb-6 backdrop-blur uppercase">
             Salões • Barbearias • Studios • Autônomos

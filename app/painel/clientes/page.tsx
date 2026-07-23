@@ -40,7 +40,7 @@ export default function ClientesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl lg:text-3xl font-serif font-bold">Clientes</h1>
-        <p className="text-sm text-navy/60 mt-1">{clientes.length} cadastradas.</p>
+        <p className="text-sm text-navy/60 mt-1">{clientes.length} cadastrados.</p>
       </div>
 
       <div className="relative">
@@ -53,7 +53,7 @@ export default function ClientesPage() {
       </div>
 
       {filtradas.length === 0 ? (
-        <div className="bg-white rounded-2xl p-10 border border-gold/15 text-center text-sm text-navy/50">Nenhuma cliente encontrada.</div>
+        <div className="bg-white rounded-2xl p-10 border border-gold/15 text-center text-sm text-navy/50">Nenhum cliente encontrado.</div>
       ) : (
         <div className="space-y-3">
           {filtradas.map((c) => {
@@ -69,7 +69,7 @@ export default function ClientesPage() {
                   <div className="min-w-0">
                     <p className="font-medium truncate">{c.name}</p>
                     <p className="text-xs text-navy/60">
-                      {apps.length} agendamento{apps.length === 1 ? "" : "s"} • {pagos.length} paga{pagos.length === 1 ? "" : "s"} • {brl(total)}
+                      {apps.length} agendamento{apps.length === 1 ? "" : "s"} • {pagos.length} pago{pagos.length === 1 ? "" : "s"} • {brl(total)}
                     </p>
                   </div>
                 </div>

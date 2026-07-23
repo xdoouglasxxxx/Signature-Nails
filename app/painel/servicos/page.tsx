@@ -76,12 +76,12 @@ export default function ServicosPage() {
   const FormCard = (
     <div className="bg-white rounded-2xl p-5 border-2 border-gold/40 space-y-3">
       <p className="font-serif font-semibold">{editingId === "new" ? "Novo serviço" : "Editar serviço"}</p>
-      <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nome (ex: Alongamento em Gel)" className="w-full h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
+      <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nome (ex: Corte Masculino, Coloração...)" className="w-full h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
       <div className="grid grid-cols-2 gap-3">
         <input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="Preço (89,90)" inputMode="decimal" className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
         <input value={form.duration_minutes} onChange={(e) => setForm({ ...form, duration_minutes: e.target.value })} placeholder="Duração (min)" inputMode="numeric" className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
       </div>
-      <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Categoria (ex: alongamento)" className="w-full h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
+      <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Categoria (ex: cabelo, barba, unhas)" className="w-full h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
       <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Descrição curta que aparece na sua página" rows={2} className="w-full rounded-xl border border-navy/10 px-3 py-2 text-sm focus:outline-none focus:border-gold" />
       {erro && <p className="text-xs text-red-600">{erro}</p>}
       <div className="flex gap-2">

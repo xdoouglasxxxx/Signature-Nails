@@ -49,7 +49,7 @@ export default function DepoimentosPage() {
 
       {deps.length === 0 ? (
         <div className="bg-white rounded-2xl p-10 border border-gold/15 text-center text-sm text-navy/50">
-          Ainda não há depoimentos. Suas clientes podem deixar um direto na sua página. 💛
+          Ainda não há depoimentos. Seus clientes podem deixar um direto na sua página. 💛
         </div>
       ) : (
         <div className="space-y-3">

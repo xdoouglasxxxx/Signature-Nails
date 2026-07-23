@@ -86,7 +86,7 @@ export default function EquipePage() {
   const save = async () => {
     setErro("")
     const pct = parseFloat(String(form.commission_percent).replace(",", "."))
-    if (!form.name.trim()) { setErro("Digite o nome da profissional."); return }
+    if (!form.name.trim()) { setErro("Digite o nome do profissional."); return }
     if (isNaN(pct) || pct < 0 || pct > 100) { setErro("Comissão deve ser entre 0 e 100."); return }
     setSaving(true)
     const payload: any = {
@@ -144,10 +144,10 @@ export default function EquipePage() {
 
   const FormCard = (
     <div className="bg-white rounded-2xl p-5 border-2 border-gold/40 space-y-4">
-      <p className="font-serif font-semibold">{editingId === "new" ? "Nova profissional" : "Editar profissional"}</p>
+      <p className="font-serif font-semibold">{editingId === "new" ? "Novo profissional" : "Editar profissional"}</p>
       <div className="grid sm:grid-cols-2 gap-3">
         <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nome" className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
-        <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Função (ex: Cabeleireira)" className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
+        <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Função (ex: Barbeiro, Cabeleireira...)" className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold" />
       </div>
       <div>
         <label className="text-xs font-semibold text-navy/70">Comissão (%)</label>
@@ -221,12 +221,12 @@ export default function EquipePage() {
         <div>
           <h1 className="text-2xl lg:text-3xl font-serif font-bold">Equipe</h1>
           <p className="text-sm text-navy/60 mt-1">
-            Cada profissional tem agenda própria. Suas clientes escolhem com quem agendar.
+            Cada profissional tem agenda própria. Seus clientes escolhem com quem agendar.
           </p>
         </div>
         {editingId === null && (
           <button onClick={startNew} className="text-xs font-semibold px-4 py-2.5 rounded-full gold-gradient text-navy inline-flex items-center gap-1">
-            <Plus className="w-4 h-4" /> Nova profissional
+            <Plus className="w-4 h-4" /> Adicionar profissional
           </button>
         )}
       </div>
@@ -283,8 +283,8 @@ export default function EquipePage() {
         )}
         {profs.length === 0 && editingId === null && (
           <div className="bg-white rounded-2xl p-8 border border-gold/15 text-center text-sm text-navy/50">
-            Trabalha sozinha? Não precisa cadastrar nada aqui — sua agenda já funciona. <br />
-            Tem equipe? Cadastre as profissionais e cada uma ganha agenda própria. ✨
+            Trabalha sozinho(a)? Não precisa cadastrar nada aqui — sua agenda já funciona. <br />
+            Tem equipe? Cadastre os profissionais e cada um ganha agenda própria. ✨
           </div>
         )}
       </div>
