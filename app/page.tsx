@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { PLANO } from "@/lib/config"
 import {
   Sparkles, CalendarCheck, Users, Wallet, MessageCircle, Smartphone,
   Scissors, Building2, User, ChevronRight, Check, Star,
@@ -126,6 +127,58 @@ export default function Landing() {
               <Check className="w-5 h-5 text-gold ml-auto shrink-0" />
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Preços */}
+      <section className="bg-white border-y border-gold/15">
+        <div className="max-w-4xl mx-auto px-6 py-16">
+          <h2 className="font-serif text-3xl font-semibold text-center">Planos simples, sem surpresa</h2>
+          <p className="text-center text-sm text-navy/60 mt-2">
+            Oferta de fundador para os {PLANO.vagasFundador} primeiros espaços: preço reduzido nos {PLANO.fundadorMeses} primeiros meses.
+          </p>
+          <div className="mt-8 grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
+            <div className="rounded-3xl border border-gold/20 p-6">
+              <p className="font-serif text-xl font-bold">{PLANO.solo.nome}</p>
+              <p className="text-xs text-navy/50 mt-0.5">Profissional autônomo(a)</p>
+              <div className="mt-4 flex items-end gap-2">
+                <p className="font-serif text-3xl font-bold">
+                  {PLANO.solo.cheio.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </p>
+                <p className="text-xs text-navy/50 mb-1.5">/mês</p>
+              </div>
+              <p className="text-[11px] text-gold mt-1">
+                Fundador: {PLANO.solo.fundador.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}/mês nos {PLANO.fundadorMeses} primeiros meses
+              </p>
+              <ul className="mt-4 space-y-1.5 text-xs text-navy/75">
+                <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-gold shrink-0" /> Página premium + agendamento 24h</li>
+                <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-gold shrink-0" /> Agenda inteligente e WhatsApp</li>
+                <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-gold shrink-0" /> Galeria, depoimentos e perfil</li>
+              </ul>
+            </div>
+            <div className="rounded-3xl bg-navy text-white p-6 relative">
+              <span className="absolute -top-3 left-6 text-[10px] font-bold tracking-widest gold-gradient text-navy px-3 py-1 rounded-full">
+                PARA EQUIPES
+              </span>
+              <p className="font-serif text-xl font-bold text-goldlight">{PLANO.pro.nome}</p>
+              <p className="text-xs text-white/60 mt-0.5">Salões e barbearias com equipe</p>
+              <div className="mt-4 flex items-end gap-2">
+                <p className="font-serif text-3xl font-bold">
+                  {PLANO.pro.cheio.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </p>
+                <p className="text-xs text-white/60 mb-1.5">/mês</p>
+              </div>
+              <p className="text-[11px] text-goldlight mt-1">
+                Fundador: {PLANO.pro.fundador.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}/mês nos {PLANO.fundadorMeses} primeiros meses
+              </p>
+              <ul className="mt-4 space-y-1.5 text-xs text-white/85">
+                <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-gold shrink-0" /> Tudo do plano {PLANO.solo.nome}</li>
+                <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-gold shrink-0" /> Profissionais ilimitados, agendas próprias</li>
+                <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-gold shrink-0" /> Cliente escolhe o profissional</li>
+                <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-gold shrink-0" /> Comissões automáticas</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 

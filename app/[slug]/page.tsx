@@ -32,6 +32,8 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState("")
   const [confirmado, setConfirmado] = useState(false)
+  const [horaLivre, setHoraLivre] = useState("")
+  const [livreMsg, setLivreMsg] = useState<{ ok: boolean; txt: string } | null>(null)
 
   // depoimento
   const [depNome, setDepNome] = useState("")
@@ -90,6 +92,8 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     if (!studio) return
     let ativo = true
     setHorario(null)
+    setHoraLivre("")
+    setLivreMsg(null)
     setCarregandoSlots(true)
     supabase
       .rpc("horarios_ocupados", { p_studio: studio.id, p_data: diaSel.iso, p_professional: temEquipe ? profissional?.id || null : null })
@@ -134,6 +138,32 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     }
     return out
   }, [expediente, intervalo, duracao, ocupados, diaSel.iso])
+
+  // Horário digitado pelo cliente: valida contra expediente, duração e agenda
+  const validarHorarioLivre = () => {
+    setLivreMsg(null)
+    if (!horaLivre) { setLivreMsg({ ok: false, txt: "Digite um horário para verificar." }); return }
+    if (!servico) { setLivreMsg({ ok: false, txt: "Escolha um serviço primeiro." }); return }
+    if (!expediente) { setLivreMsg({ ok: false, txt: "Fechado neste dia — escolha outra data." }); return }
+    const t = toMin(horaLivre)
+    const abre = toMin(expediente.start)
+    const fecha = toMin(expediente.end)
+    const agora = new Date()
+    if (diaSel.iso === toISO(agora) && t <= agora.getHours() * 60 + agora.getMinutes()) {
+      setLivreMsg({ ok: false, txt: "Esse horário já passou. Escolha um horário futuro." })
+      return
+    }
+    if (t < abre || t + duracao > fecha) {
+      setLivreMsg({ ok: false, txt: `Fora do expediente: atendemos das ${expediente.start} às ${expediente.end}, e ${servico.name} leva ${duracao} min.` })
+      return
+    }
+    if (ocupados.some((o) => t < o.fim && t + duracao > o.ini)) {
+      setLivreMsg({ ok: false, txt: "Esse horário já está reservado. Tente alguns minutos antes ou depois." })
+      return
+    }
+    setHorario(horaLivre)
+    setLivreMsg({ ok: true, txt: `${horaLivre} disponível! Preencha seus dados abaixo para confirmar.` })
+  }
 
   const waNumber = (studio?.phone || "").replace(/\D/g, "")
   const linkWhats = `https://wa.me/${waNumber}?text=${encodeURIComponent(
@@ -493,7 +523,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
                     <button
                       key={h}
                       disabled={ocupado}
-                      onClick={() => setHorario(h)}
+                      onClick={() => { setHorario(h); setHoraLivre(""); setLivreMsg(null) }}
                       className={cn(
                         "h-11 rounded-xl border text-sm font-semibold transition-all",
                         ocupado
@@ -509,6 +539,36 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
                 </div>
               )}
             </div>
+
+            {/* horário livre */}
+            {expediente && (
+              <div className="bg-cream rounded-2xl p-4">
+                <p className="text-sm font-bold mb-2">Prefere outro horário? ⏰</p>
+                <div className="flex gap-2">
+                  <input
+                    type="time"
+                    step={300}
+                    value={horaLivre}
+                    onChange={(e) => { setHoraLivre(e.target.value); setLivreMsg(null) }}
+                    className="h-12 flex-1 rounded-xl border border-navy/10 bg-white px-3 text-sm focus:outline-none focus:border-gold"
+                  />
+                  <button
+                    onClick={validarHorarioLivre}
+                    className="px-5 h-12 rounded-xl bg-navy text-white text-xs font-bold shrink-0"
+                  >
+                    VERIFICAR
+                  </button>
+                </div>
+                {livreMsg && (
+                  <p className={cn("text-xs mt-2 font-medium", livreMsg.ok ? "text-emerald-700" : "text-red-600")}>
+                    {livreMsg.ok ? "✓ " : "✗ "}{livreMsg.txt}
+                  </p>
+                )}
+                {horario === horaLivre && horaLivre && (
+                  <p className="text-xs mt-1 text-navy/60">Horário escolhido: <b>{horaLivre}</b></p>
+                )}
+              </div>
+            )}
 
             {/* dados */}
             <div className="space-y-3">
