@@ -61,7 +61,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   const b64ToUint8 = (base64: string) => {
     const padding = "=".repeat((4 - (base64.length % 4)) % 4)
     const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"))
-    return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)))
+    return Uint8Array.from(raw.split("").map((c) => c.charCodeAt(0)))
   }
 
   const ativarPush = async () => {
