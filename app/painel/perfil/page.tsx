@@ -16,6 +16,10 @@ export default function PerfilPage() {
   const [salvo, setSalvo] = useState(false)
   const [erro, setErro] = useState("")
   const [uploading, setUploading] = useState<"avatar" | "cover" | null>(null)
+  const [novaSenha, setNovaSenha] = useState("")
+  const [novaSenha2, setNovaSenha2] = useState("")
+  const [senhaMsg, setSenhaMsg] = useState<{ ok: boolean; txt: string } | null>(null)
+  const [salvandoSenha, setSalvandoSenha] = useState(false)
 
   useEffect(() => {
     if (!studio) return
@@ -90,6 +94,18 @@ export default function PerfilPage() {
     if (error) { setErro("Não foi possível salvar."); return }
     setSalvo(true)
     refresh()
+  }
+
+  const alterarSenha = async () => {
+    setSenhaMsg(null)
+    if (novaSenha.length < 8) { setSenhaMsg({ ok: false, txt: "A senha precisa de pelo menos 8 caracteres." }); return }
+    if (novaSenha !== novaSenha2) { setSenhaMsg({ ok: false, txt: "As senhas não conferem." }); return }
+    setSalvandoSenha(true)
+    const { error } = await supabase.auth.updateUser({ password: novaSenha })
+    setSalvandoSenha(false)
+    if (error) { setSenhaMsg({ ok: false, txt: "Não foi possível alterar. Tente novamente." }); return }
+    setNovaSenha(""); setNovaSenha2("")
+    setSenhaMsg({ ok: true, txt: "Senha alterada com sucesso! ✦" })
   }
 
   if (loading)
@@ -195,6 +211,34 @@ export default function PerfilPage() {
             className="mt-1 w-full rounded-xl border border-navy/10 px-3 py-2.5 text-sm focus:outline-none focus:border-gold"
           />
         </div>
+      </div>
+
+      {/* segurança */}
+      <div className="bg-white rounded-2xl p-5 border border-gold/15 space-y-3">
+        <p className="text-sm font-bold">Alterar senha</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <input
+            type="password" value={novaSenha} onChange={(e) => { setNovaSenha(e.target.value); setSenhaMsg(null) }}
+            placeholder="Nova senha (mín. 8 caracteres)"
+            className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold"
+          />
+          <input
+            type="password" value={novaSenha2} onChange={(e) => { setNovaSenha2(e.target.value); setSenhaMsg(null) }}
+            placeholder="Repita a nova senha"
+            className="h-11 rounded-xl border border-navy/10 px-3 text-sm focus:outline-none focus:border-gold"
+          />
+        </div>
+        {senhaMsg && (
+          <p className={senhaMsg.ok ? "text-xs text-emerald-700 font-medium" : "text-xs text-red-600"}>
+            {senhaMsg.ok ? "✓ " : "✗ "}{senhaMsg.txt}
+          </p>
+        )}
+        <button
+          onClick={alterarSenha} disabled={salvandoSenha || !novaSenha}
+          className="text-xs font-semibold px-5 py-2.5 rounded-full bg-navy text-white disabled:opacity-50 inline-flex items-center gap-1.5"
+        >
+          {salvandoSenha && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Alterar senha
+        </button>
       </div>
 
       {erro && <div className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{erro}</div>}

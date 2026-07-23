@@ -54,6 +54,9 @@ export default function Login() {
             placeholder="Sua senha"
             className="w-full h-12 rounded-xl border border-navy/10 px-4 text-sm focus:outline-none focus:border-gold"
           />
+          <div className="text-right -mt-2">
+            <Link href="/recuperar" className="text-xs text-navy/50 hover:text-gold">Esqueceu a senha?</Link>
+          </div>
           {erro && <p className="text-xs text-red-600">{erro}</p>}
           <button
             type="submit" disabled={loading}
