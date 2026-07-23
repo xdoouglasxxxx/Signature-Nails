@@ -16,6 +16,7 @@ export default function Onboarding() {
   const [whatsapp, setWhatsapp] = useState("")
   const [cidade, setCidade] = useState("")
   const [loading, setLoading] = useState(false)
+  const [planoEscolhido, setPlanoEscolhido] = useState<"solo" | "pro" | null>(null)
   const [erro, setErro] = useState("")
 
   // já tem studio? vai direto pro painel
@@ -50,6 +51,7 @@ export default function Onboarding() {
     if (slug.length < 3 || slugStatus === "ocupado") { setErro("Escolha um link válido e disponível."); return }
     if (phone.length < 12) { setErro("WhatsApp: DDI + DDD + número (ex: 5541999998888)."); return }
 
+    if (!planoEscolhido) { setErro("Escolha o plano que combina com seu espaço."); return }
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     const { error } = await supabase.from("studios").insert({
@@ -59,6 +61,7 @@ export default function Onboarding() {
       phone,
       city: cidade.trim() || null,
       specialty: null,
+      chosen_plan: planoEscolhido,
     })
     setLoading(false)
     if (error) {
@@ -130,6 +133,38 @@ export default function Onboarding() {
               className="mt-1 w-full h-12 rounded-xl border border-navy/10 px-4 text-sm focus:outline-none focus:border-gold"
             />
           </div>
+          <div>
+            <p className="text-xs font-semibold text-navy/70 mb-2">Como você trabalha?</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setPlanoEscolhido("solo")}
+                className={
+                  "rounded-2xl border-2 p-4 text-left transition-all " +
+                  (planoEscolhido === "solo" ? "border-gold bg-cream" : "border-navy/10 bg-white")
+                }
+              >
+                <p className="font-serif font-bold text-sm">Signature</p>
+                <p className="text-[11px] text-navy/60 mt-0.5">Trabalho sozinho(a)</p>
+                <p className="text-[11px] text-gold font-semibold mt-1.5">R$ 49,90/mês</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPlanoEscolhido("pro")}
+                className={
+                  "rounded-2xl border-2 p-4 text-left transition-all relative " +
+                  (planoEscolhido === "pro" ? "border-gold bg-navy text-white" : "border-navy/10 bg-white")
+                }
+              >
+                <span className="absolute -top-2 right-3 text-[9px] font-bold gold-gradient text-navy px-2 py-0.5 rounded-full">EQUIPES</span>
+                <p className="font-serif font-bold text-sm">Signature Pro</p>
+                <p className={"text-[11px] mt-0.5 " + (planoEscolhido === "pro" ? "text-white/60" : "text-navy/60")}>Tenho equipe</p>
+                <p className="text-[11px] text-gold font-semibold mt-1.5">R$ 99,90/mês</p>
+              </button>
+            </div>
+            <p className="text-[10px] text-navy/40 mt-1.5">14 dias grátis em qualquer plano • fundadores: 3 meses com desconto</p>
+          </div>
+
           {erro && <p className="text-xs text-red-600">{erro}</p>}
           <button
             type="submit" disabled={loading}

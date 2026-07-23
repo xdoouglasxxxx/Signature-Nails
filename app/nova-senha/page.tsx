@@ -16,17 +16,28 @@ export default function NovaSenha() {
   const [erro, setErro] = useState("")
   const [sucesso, setSucesso] = useState(false)
 
-  // o link do email autentica a sessão automaticamente; aguardamos ela existir
+  // Fluxo token_hash: funciona mesmo abrindo o link em outro aparelho.
+  // Fallback: sessão criada automaticamente pelo link no mesmo navegador.
   useEffect(() => {
-    let tentativas = 0
-    const checar = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) { setPronto("ok"); return }
-      tentativas++
-      if (tentativas < 10) setTimeout(checar, 500)
-      else setPronto("invalido")
+    const iniciar = async () => {
+      const params = new URLSearchParams(window.location.search)
+      const tokenHash = params.get("token_hash")
+      if (tokenHash) {
+        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" })
+        setPronto(error ? "invalido" : "ok")
+        return
+      }
+      let tentativas = 0
+      const checar = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) { setPronto("ok"); return }
+        tentativas++
+        if (tentativas < 10) setTimeout(checar, 500)
+        else setPronto("invalido")
+      }
+      checar()
     }
-    checar()
+    iniciar()
   }, []) // eslint-disable-line
 
   const salvar = async (e: any) => {

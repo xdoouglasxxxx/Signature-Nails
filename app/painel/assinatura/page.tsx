@@ -3,7 +3,7 @@
 import { useStudio } from "@/lib/useStudio"
 import { statusPlano } from "@/lib/plan"
 import { PLANO, PIX_KEY, WHATS_SUPORTE } from "@/lib/config"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Check, Copy, MessageCircle, Clock, Users, Crown } from "lucide-react"
 import { brl, cn } from "@/lib/utils"
 
@@ -40,6 +40,13 @@ export default function AssinaturaPage() {
   const { studio, loading } = useStudio()
   const [escolhido, setEscolhido] = useState<any>(null)
   const [copiado, setCopiado] = useState(false)
+
+  useEffect(() => {
+    if (studio && !escolhido) {
+      const alvo = PLANOS.find((p) => p.key === (studio.chosen_plan === "solo" ? "solo" : "pro"))
+      if (alvo) setEscolhido(alvo)
+    }
+  }, [studio]) // eslint-disable-line
 
   if (loading)
     return <div className="flex justify-center pt-20"><div className="w-8 h-8 border-4 border-gold border-t-transparent rounded-full animate-spin" /></div>

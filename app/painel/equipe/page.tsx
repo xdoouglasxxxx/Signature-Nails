@@ -145,7 +145,9 @@ export default function EquipePage() {
     return <div className="flex justify-center pt-20"><div className="w-8 h-8 border-4 border-gold border-t-transparent rounded-full animate-spin" /></div>
 
   // Equipe é recurso do Signature Pro (liberado no teste grátis para experimentar)
-  const acessoPro = studio.plan === "pro" || statusPlano(studio).status === "trial"
+  const acessoPro =
+    studio.plan === "pro" ||
+    (statusPlano(studio).status === "trial" && studio.chosen_plan !== "solo")
   if (!acessoPro)
     return (
       <div className="pt-10 text-center max-w-md mx-auto">

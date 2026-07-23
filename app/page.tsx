@@ -72,6 +72,9 @@ export default function Landing() {
             <Link href="/cadastro" className="px-8 py-3.5 rounded-full gold-gradient text-navy font-bold text-sm tracking-wide shadow-[0_10px_30px_rgba(177,139,94,0.5)] inline-flex items-center gap-2 hover:scale-[1.02] transition-transform">
               COMEÇAR AGORA — É GRÁTIS <ChevronRight className="w-4 h-4" />
             </Link>
+            <Link href="/estudio-lume" className="px-8 py-3.5 rounded-full border border-goldlight/40 text-goldlight font-bold text-sm tracking-wide inline-flex items-center gap-2 hover:bg-white/5 transition-colors">
+              VER PÁGINA DE EXEMPLO
+            </Link>
           </div>
           <p className="mt-3 text-xs text-white/50">14 dias grátis • Sem cartão de crédito • Pronto em 5 minutos</p>
         </div>

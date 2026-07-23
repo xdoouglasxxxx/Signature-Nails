@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import "./globals.css"
+import SwRegister from "./sw-register"
 
 export const metadata: Metadata = {
   title: "Signature — Gestão e agendamento para salões, barbearias e studios",
@@ -33,7 +34,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body><SwRegister />{children}</body>
     </html>
   )
 }
