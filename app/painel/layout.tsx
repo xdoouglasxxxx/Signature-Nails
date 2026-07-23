@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import {
-  LayoutDashboard, Calendar, Clock, Images, Users, Scissors,
+  LayoutDashboard, Calendar, Clock, Images, Users, UserPlus, Scissors,
   User, MessageSquareQuote, LogOut, Menu, X, Sparkles, Crown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -15,6 +15,7 @@ const MENU = [
   { label: "Dashboard", href: "/painel", icon: LayoutDashboard },
   { label: "Agenda", href: "/painel/agenda", icon: Calendar },
   { label: "Serviços", href: "/painel/servicos", icon: Scissors },
+  { label: "Equipe", href: "/painel/equipe", icon: UserPlus },
   { label: "Horários", href: "/painel/horarios", icon: Clock },
   { label: "Galeria", href: "/painel/galeria", icon: Images },
   { label: "Depoimentos", href: "/painel/depoimentos", icon: MessageSquareQuote },
@@ -79,9 +80,9 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gold/15 p-4 sticky top-0 h-screen">
         <div className="flex items-center gap-2 px-2 py-3 mb-4">
           <div className="w-9 h-9 rounded-full gold-gradient flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-navy" />
+            <span className="font-serif text-base font-bold text-navy leading-none">S</span>
           </div>
-          <span className="font-serif text-lg font-bold">Signature Nails</span>
+          <span className="font-serif text-lg font-bold">Signature</span>
         </div>
         <nav className="flex-1 space-y-1"><NavLinks /></nav>
         <button onClick={sair} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-navy/60 hover:bg-red-50 hover:text-red-600">

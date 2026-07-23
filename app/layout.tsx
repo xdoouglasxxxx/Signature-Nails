@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Signature Nails — Agendamento online para nail designers",
+  title: "Signature — Gestão e agendamento para salões, barbearias e studios",
   description:
-    "Sua página profissional com agendamento online: serviços, horários em tempo real, galeria e painel completo. Feito para nail designers.",
+    "Página premium com agendamento online 24h, equipe com agendas independentes e comissões. A plataforma de gestão para o seu negócio de beleza.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -15,12 +15,12 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Signature Nails",
+    title: "Signature",
     statusBarStyle: "black-translucent",
   },
   openGraph: {
-    title: "Signature Nails — Agendamento online para nail designers",
-    description: "Suas clientes agendam sozinhas, sem novela no direct. Página premium + agenda inteligente.",
+    title: "Signature — Gestão e agendamento para salões, barbearias e studios",
+    description: "Agendamento online 24h, equipe e comissões. A assinatura premium do seu negócio de beleza.",
     type: "website",
     locale: "pt_BR",
   },

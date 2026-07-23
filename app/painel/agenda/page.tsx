@@ -37,6 +37,8 @@ export default function AgendaPage() {
   const [apps, setApps] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [equipe, setEquipe] = useState<any[]>([])
+  const [filtroProf, setFiltroProf] = useState<string>("todas")
 
   const dateStr = format(day, "yyyy-MM-dd")
 
@@ -45,13 +47,19 @@ export default function AgendaPage() {
     setLoading(true)
     const { data } = await supabase
       .from("appointments")
-      .select("id, start_time, end_time, status, price_at_time, clients(name, phone), services(name)")
+      .select("id, start_time, end_time, status, price_at_time, professional_id, clients(name, phone), services(name), professionals(name)")
       .eq("studio_id", studio.id).eq("date", dateStr).order("start_time")
     setApps(data || [])
     setLoading(false)
   }, [supabase, dateStr, studio])
 
   useEffect(() => { fetchDay() }, [fetchDay])
+
+  useEffect(() => {
+    if (!studio) return
+    supabase.from("professionals").select("id, name").eq("studio_id", studio.id).order("sort_order")
+      .then(({ data }) => setEquipe(data || []))
+  }, [studio]) // eslint-disable-line
 
   const setStatus = async (id: string, status: string) => {
     setUpdating(id)
@@ -80,7 +88,8 @@ export default function AgendaPage() {
     return app.start_time?.substring(0, 5) <= n && n < app.end_time?.substring(0, 5)
   }
 
-  const receitaDia = apps.filter((a) => a.status === "pago").reduce((acc, a) => acc + (a.price_at_time || 0), 0)
+  const appsVisiveis = filtroProf === "todas" ? apps : apps.filter((a) => a.professional_id === filtroProf)
+  const receitaDia = appsVisiveis.filter((a) => a.status === "pago").reduce((acc, a) => acc + (a.price_at_time || 0), 0)
 
   if (loadingStudio)
     return <div className="flex justify-center pt-20"><div className="w-8 h-8 border-4 border-gold border-t-transparent rounded-full animate-spin" /></div>
@@ -113,13 +122,26 @@ export default function AgendaPage() {
         </button>
       </div>
 
+      {equipe.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setFiltroProf("todas")} className={cn("text-xs font-semibold px-3 py-1.5 rounded-full border", filtroProf === "todas" ? "bg-navy text-white border-navy" : "bg-white border-navy/10")}>
+            Todas
+          </button>
+          {equipe.map((pr) => (
+            <button key={pr.id} onClick={() => setFiltroProf(pr.id)} className={cn("text-xs font-semibold px-3 py-1.5 rounded-full border", filtroProf === pr.id ? "bg-navy text-white border-navy" : "bg-white border-navy/10")}>
+              {pr.name.split(" ")[0]}
+            </button>
+          ))}
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center h-32 items-center"><div className="w-8 h-8 border-4 border-gold border-t-transparent rounded-full animate-spin" /></div>
-      ) : apps.length === 0 ? (
+      ) : appsVisiveis.length === 0 ? (
         <div className="bg-white rounded-2xl p-10 border border-gold/15 text-center text-navy/50">Nenhum agendamento neste dia.</div>
       ) : (
         <div className="space-y-3">
-          {apps.map((app) => (
+          {appsVisiveis.map((app) => (
             <div key={app.id} className="bg-white rounded-2xl p-4 border border-gold/15">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-4 min-w-0">
@@ -129,7 +151,10 @@ export default function AgendaPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-medium truncate">{app.clients?.name || "Cliente"}</p>
-                    <p className="text-xs text-navy/60 truncate">{app.services?.name}</p>
+                    <p className="text-xs text-navy/60 truncate">
+                      {app.services?.name}
+                      {app.professionals?.name && <span className="text-gold font-semibold"> • {app.professionals.name.split(" ")[0]}</span>}
+                    </p>
                     {app.clients?.phone && (
                       <a
                         href={`https://wa.me/${String(app.clients.phone).replace(/\D/g, "")}?text=${encodeURIComponent(mensagemWhats(app, day))}`}

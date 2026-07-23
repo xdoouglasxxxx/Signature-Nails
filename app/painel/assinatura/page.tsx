@@ -30,7 +30,7 @@ export default function AssinaturaPage() {
     setTimeout(() => setCopiado(false), 2000)
   }
   const msgWhats = encodeURIComponent(
-    `Olá! Quero assinar o Signature Nails 💅\nMeu studio: ${studio.name} (/${studio.slug})\nSegue o comprovante do Pix:`,
+    `Olá! Quero assinar o Signature ✂️💈💅\nMeu espaço: ${studio.name} (/${studio.slug})\nSegue o comprovante do Pix:`,
   )
 
   return (

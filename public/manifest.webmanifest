@@ -1,7 +1,7 @@
 {
-  "name": "Signature Nails",
+  "name": "Signature",
   "short_name": "Signature",
-  "description": "Sua página premium com agendamento online para nail designers.",
+  "description": "Gestão e agendamento premium para salões, barbearias e studios.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#121C2C",

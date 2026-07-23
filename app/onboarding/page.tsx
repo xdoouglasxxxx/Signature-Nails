@@ -58,7 +58,7 @@ export default function Onboarding() {
       slug,
       phone,
       city: cidade.trim() || null,
-      specialty: "Nail Designer",
+      specialty: null,
     })
     setLoading(false)
     if (error) {
@@ -76,15 +76,15 @@ export default function Onboarding() {
           <div className="w-14 h-14 rounded-full gold-gradient flex items-center justify-center mx-auto mb-3">
             <Sparkles className="w-6 h-6 text-navy" />
           </div>
-          <h1 className="font-serif text-2xl font-bold text-white">Vamos criar seu studio ✨</h1>
+          <h1 className="font-serif text-2xl font-bold text-white">Vamos criar seu espaço ✨</h1>
           <p className="text-sm text-white/60 mt-1">Você pode mudar tudo depois no painel</p>
         </div>
         <form onSubmit={criar} className="bg-white rounded-3xl p-6 space-y-4 shadow-2xl">
           <div>
-            <label className="text-xs font-semibold text-navy/70">Nome do studio</label>
+            <label className="text-xs font-semibold text-navy/70">Nome do seu espaço (salão, barbearia, studio...)</label>
             <input
               value={nome} onChange={(e) => setNome(e.target.value)}
-              placeholder="Ex: Maria Silva Nails"
+              placeholder="Ex: Studio B Cabeleireiros"
               className="mt-1 w-full h-12 rounded-xl border border-navy/10 px-4 text-sm focus:outline-none focus:border-gold"
             />
           </div>
@@ -95,7 +95,7 @@ export default function Onboarding() {
               <input
                 value={slug}
                 onChange={(e) => { setSlugEditado(true); setSlug(slugify(e.target.value)) }}
-                placeholder="maria-silva-nails"
+                placeholder="studio-b"
                 className="flex-1 h-full px-3 text-sm focus:outline-none"
               />
               <span className="px-3">

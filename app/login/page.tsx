@@ -32,7 +32,7 @@ export default function Login() {
           <div className="w-14 h-14 rounded-full gold-gradient flex items-center justify-center mx-auto mb-3">
             <Sparkles className="w-6 h-6 text-navy" />
           </div>
-          <h1 className="font-serif text-2xl font-bold text-white">Signature Nails</h1>
+          <h1 className="font-serif text-2xl font-bold text-white">Signature</h1>
           <p className="text-sm text-white/60 mt-1">Entre no seu painel</p>
         </div>
         <form onSubmit={entrar} className="bg-white rounded-3xl p-6 space-y-4 shadow-2xl">

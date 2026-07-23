@@ -17,6 +17,9 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
   const [fotos, setFotos] = useState<any[]>([])
   const [verTudo, setVerTudo] = useState(false)
   const [depoimentos, setDepoimentos] = useState<any[]>([])
+  const [equipe, setEquipe] = useState<any[]>([])
+  const [mapaServicos, setMapaServicos] = useState<Record<string, string[]>>({})
+  const [profissional, setProfissional] = useState<any>(null)
 
   // agendamento
   const [servico, setServico] = useState<any>(null)
@@ -60,18 +63,25 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
         .maybeSingle()
       if (!s) { setNaoEncontrado(true); return }
       setStudio(s)
-      const [{ data: svs }, { data: gal }, { data: deps }] = await Promise.all([
+      const [{ data: svs }, { data: gal }, { data: deps }, { data: profs }, { data: psvc }] = await Promise.all([
         supabase.from("services").select("id, name, price, duration_minutes, description, category")
           .eq("studio_id", s.id).eq("active", true).order("sort_order").order("created_at"),
         supabase.from("gallery").select("id, image_url, description, category")
           .eq("studio_id", s.id).order("sort_order").order("created_at", { ascending: false }).limit(30),
         supabase.from("testimonials").select("id, client_name, text, rating")
           .eq("studio_id", s.id).eq("approved", true).order("created_at", { ascending: false }).limit(6),
+        supabase.from("professionals").select("id, name, role, avatar_url, working_hours")
+          .eq("studio_id", s.id).eq("active", true).order("sort_order").order("created_at"),
+        supabase.from("professional_services").select("professional_id, service_id"),
       ])
       setServicos(svs || [])
       if (svs && svs.length > 0) setServico(svs[0])
       setFotos(gal || [])
       setDepoimentos(deps || [])
+      setEquipe(profs || [])
+      const mm: Record<string, string[]> = {}
+      ;(psvc || []).forEach((r: any) => { (mm[r.professional_id] ||= []).push(r.service_id) })
+      setMapaServicos(mm)
     })()
   }, [params.slug]) // eslint-disable-line
 
@@ -82,16 +92,29 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     setHorario(null)
     setCarregandoSlots(true)
     supabase
-      .rpc("horarios_ocupados", { p_studio: studio.id, p_data: diaSel.iso })
+      .rpc("horarios_ocupados", { p_studio: studio.id, p_data: diaSel.iso, p_professional: temEquipe ? profissional?.id || null : null })
       .then(({ data }) => {
         if (!ativo) return
         setOcupados((data || []).map((r: any) => ({ ini: toMin(r.start_time.slice(0, 5)), fim: toMin(r.end_time.slice(0, 5)) })))
         setCarregandoSlots(false)
       })
     return () => { ativo = false }
-  }, [studio, diaSel.iso]) // eslint-disable-line
+  }, [studio, diaSel.iso, profissional?.id]) // eslint-disable-line
 
-  const wh = studio?.working_hours || DEFAULT_WH
+  // profissionais aptas ao serviço escolhido (sem vínculos = faz todos)
+  const profsDoServico = equipe.filter((pr) => {
+    const lista = mapaServicos[pr.id]
+    return !lista || lista.length === 0 || (servico && lista.includes(servico.id))
+  })
+
+  // se a escolhida não faz o serviço novo, desmarca
+  useEffect(() => {
+    if (profissional && !profsDoServico.some((pr) => pr.id === profissional.id)) setProfissional(null)
+    if (!profissional && profsDoServico.length === 1) setProfissional(profsDoServico[0])
+  }, [servico, equipe]) // eslint-disable-line
+
+  const temEquipe = equipe.length > 0
+  const wh = (temEquipe && profissional?.working_hours) || studio?.working_hours || DEFAULT_WH
   const expediente = wh[String(diaSel.date.getDay())] || null
   const intervalo = studio?.slot_interval_minutes || 30
   const duracao = servico?.duration_minutes || 60
@@ -122,6 +145,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
     if (!nome.trim()) { setErro("Digite seu nome para confirmar."); return }
     if (telefone.replace(/\D/g, "").length < 10) { setErro("Digite um WhatsApp válido com DDD."); return }
     if (!horario || !servico) { setErro("Escolha um serviço e um horário."); return }
+    if (temEquipe && !profissional) { setErro("Escolha a profissional para o atendimento."); return }
 
     setEnviando(true)
     const { error } = await supabase.rpc("criar_agendamento", {
@@ -131,6 +155,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
       p_service_id: servico.id,
       p_data: diaSel.iso,
       p_horario: horario,
+      p_professional: temEquipe ? profissional?.id || null : null,
     })
     setEnviando(false)
     if (error) {
@@ -141,6 +166,8 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
         setHorario(null)
       } else if (m.includes("horario_passado") || m.includes("data_passada")) {
         setErro("Esse horário já passou. Escolha um horário futuro.")
+      } else if (m.includes("profissional_invalida") || m.includes("profissional_nao_faz_servico")) {
+        setErro("Essa profissional não atende esse serviço. Escolha outra opção.")
       } else if (m.includes("assinatura_expirada")) {
         setErro("O agendamento online está temporariamente indisponível. Chame no WhatsApp!")
       } else if (m.includes("dia_fechado") || m.includes("fora_do_horario")) {
@@ -206,9 +233,9 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
           <h1 className="font-serif text-2xl font-semibold mt-6">{studio.name}</h1>
           <p className="text-sm text-white/60 mt-3 leading-relaxed">
             Esta página está temporariamente indisponível.
-            <br />Volte em breve! 💅✨
+            <br />Volte em breve! ✦
           </p>
-          <p className="mt-10 text-[11px] text-white/30">Signature Nails</p>
+          <p className="mt-10 text-[11px] text-white/30">Signature</p>
         </div>
       </main>
     )
@@ -380,6 +407,46 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
               </div>
             )}
 
+            {/* profissional */}
+            {temEquipe && (
+              <div>
+                <p className="text-sm font-bold mb-2">Escolha a profissional</p>
+                {profsDoServico.length === 0 ? (
+                  <p className="text-sm text-navy/60 bg-cream rounded-xl px-4 py-3 text-center">
+                    Nenhuma profissional disponível para este serviço.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {profsDoServico.map((pr) => (
+                      <button
+                        key={pr.id}
+                        onClick={() => { setProfissional(pr); setHorario(null) }}
+                        className={cn(
+                          "flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full border text-sm font-semibold transition-all",
+                          profissional?.id === pr.id ? "bg-navy border-navy text-white" : "bg-white border-gold/25 hover:border-gold",
+                        )}
+                      >
+                        <span className="w-8 h-8 rounded-full overflow-hidden bg-cream shrink-0 gold-gradient p-[1.5px]">
+                          {pr.avatar_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={pr.avatar_url} alt={pr.name} className="w-full h-full rounded-full object-cover" />
+                          ) : (
+                            <span className={cn("w-full h-full rounded-full flex items-center justify-center font-serif text-xs font-bold", profissional?.id === pr.id ? "bg-navy text-goldlight" : "bg-cream text-navy")}>
+                              {pr.name.charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </span>
+                        <span>
+                          {pr.name.split(" ")[0]}
+                          {pr.role && <span className={cn("block text-[10px] font-normal", profissional?.id === pr.id ? "text-white/60" : "text-navy/50")}>{pr.role}</span>}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* dias */}
             <div>
               <p className="text-sm font-bold mb-2">Escolha o dia</p>
@@ -474,6 +541,31 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
           </div>
         )}
       </section>
+
+      {/* EQUIPE */}
+      {equipe.length > 0 && (
+        <section className="max-w-2xl mx-auto px-4 py-10">
+          <h2 className="font-serif text-2xl font-semibold text-center mb-6">Nossa equipe</h2>
+          <div className="flex flex-wrap justify-center gap-4">
+            {equipe.map((pr) => (
+              <div key={pr.id} className="bg-white rounded-3xl border border-gold/15 p-4 text-center w-[140px]">
+                <div className="w-16 h-16 rounded-full gold-gradient p-[2px] mx-auto">
+                  {pr.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={pr.avatar_url} alt={pr.name} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-navy flex items-center justify-center font-serif text-lg font-bold text-goldlight">
+                      {pr.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm font-semibold mt-2 truncate">{pr.name.split(" ")[0]}</p>
+                {pr.role && <p className="text-[11px] text-navy/50 truncate">{pr.role}</p>}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* DEPOIMENTOS */}
       <section className="max-w-2xl mx-auto px-4 py-10">
@@ -583,7 +675,7 @@ export default function StudioPage({ params }: { params: { slug: string } }) {
       {/* rodapé com loop viral */}
       <footer className="py-8 text-center">
         <a href="/" className="text-xs text-navy/40 hover:text-gold">
-          ✨ Página criada com <b>Signature Nails</b> — crie a sua grátis
+          ✦ Página criada com <b>Signature</b> — crie a sua grátis
         </a>
       </footer>
 
