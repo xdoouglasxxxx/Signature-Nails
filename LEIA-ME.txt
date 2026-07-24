@@ -1,45 +1,39 @@
-SIGNATURE • CENTRAL DE NOTIFICAÇÕES v2 (Ouro Edition)
-======================================================
+SIGNATURE • CONTRASTE + PERFIL DO PROFISSIONAL
+================================================
 
-ATENDE A ESPECIFICAÇÃO COMPLETA:
-✓ Sino no painel com badge persistente de não lidas
-✓ Estado "lida" salvo no BANCO — não some ao recarregar e
-  sincroniza entre todos os aparelhos do estúdio
-✓ Histórico com filtros: Não lidas / Hoje / Próximos / Todas
-✓ Clique na notificação → abre o dia correspondente na agenda
-  e marca como lida
-✓ Agendamento para OUTRO dia ganha destaque dourado com a data
-  por extenso ("Sexta, 31/07 às 14:00")
-✓ Tempo real via Supabase Realtime (sem recarregar a página)
-✓ Notificação de qualquer data, independente do dia aberto
-✓ Visual nativo do tema dark (ouro champagne)
+ARQUIVO 1: app/globals.css (substituir)
+Corrige o contraste dos selos e botões:
+- Chips "confirmado/pendente/pago/cancelado" da Agenda e do
+  Dashboard: viravam texto claro sobre fundo claro. Agora são
+  translúcidos escuros com texto vivo e borda (mesmo padrão do
+  Financeiro dark).
+- Botão Cancelar com vermelho mais legível.
+- Nomes (font-medium truncate) puxados para o pérola #F0EDE5.
 
-COMO APLICAR (3 passos)
+ARQUIVO 2: app/painel/equipe/[id]/page.tsx (criar — pasta nova
+"[id]" dentro de app/painel/equipe, com colchetes mesmo)
+Página de perfil individual do profissional:
+- Cabeçalho com avatar, nome grande, % de comissão e os serviços
+  que ele realiza
+- 4 KPIs do mês: atendimentos, faturamento, comissão (com "a
+  pagar" em destaque) e ticket médio + tempo médio por atendimento
+- Próximos agendamentos (com status)
+- Clientes atendidos (distintos, com nº de visitas e total gasto)
+- Histórico recente (com a comissão de cada atendimento pago)
+- Atalho "Comissões e repasses" para o Financeiro
 
-1) SUPABASE — SQL Editor:
-   a. Se AINDA NÃO rodou o 9-novos-agendamentos.sql (do zip do
-      sino), rode-o primeiro (created_at + realtime).
-   b. Rode o sql/10-notificacoes.sql deste zip (notif_seen_at).
+COMO ABRIR O PERFIL
+A página vive em /painel/equipe/SEU-ID-DO-PROFISSIONAL.
+Para o clique no card da Equipe levar até ela, na página
+app/painel/equipe/page.tsx envolva o card de cada profissional:
 
-2) GITHUB — components/NovosAgendamentos.tsx
-   Substitua o arquivo (ou crie, se o anterior não foi subido).
+  import Link from "next/link"
+  ...
+  <Link href={`/painel/equipe/${pr.id}`}> ...card... </Link>
 
-3) GITHUB — app/painel/agenda/page.tsx
-   Substitua pelo deste zip. É a sua Agenda atual + o sino
-   integrado no cabeçalho, ao lado do "Recebido no dia".
-   (Pelo print, o sino ainda não estava no ar — este arquivo
-   resolve. O tema dark já veste a página automaticamente.)
+Se preferir, me manda o page.tsx da Equipe que eu devolvo pronto
+com o clique + a hierarquia visual melhorada.
 
-IMPORTANTE
-O print da Agenda mostra que o zip anterior (agenda-com-sino)
-não chegou a ser aplicado. Este zip JÁ INCLUI tudo — pode pular
-o anterior e usar só este.
-
-TESTE DE VALIDAÇÃO
-Abra a Agenda em "hoje" e faça um agendamento pela página
-pública para daqui a 3 dias:
-- o sino deve ficar DOURADO com o contador na hora, sem F5;
-- abra o sino: a notificação mostra a data em destaque;
-- toque nela: a agenda pula para o dia e a notificação
-  é marcada como lida (o badge diminui);
-- abra o painel em outro aparelho: já aparece lida lá também.
+PRÓXIMA FASE (precisa de schema novo — aviso antes de criar):
+foto do profissional, horários de trabalho e folgas individuais,
+avaliações.

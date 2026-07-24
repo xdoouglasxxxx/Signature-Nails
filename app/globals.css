@@ -43,8 +43,6 @@ body { @apply bg-cream text-navy font-sans; }
    Escopo: tudo dentro de .theme-dark (aplicado no layout do
    painel). Reveste as páginas existentes traduzindo os tokens
    claros para o dark, sem tocar nas páginas públicas.
-   Paleta: #0A0F1A fundo • #131E2E cards • #C9A96E ouro
-           #F0EDE5 texto • #8896A8 secundário
    ============================================================ */
 
 .theme-dark {
@@ -87,6 +85,29 @@ body { @apply bg-cream text-navy font-sans; }
 .theme-dark .text-emerald-700 { color: #6EE7B7 !important; }
 .theme-dark .text-emerald-600 { color: #34D399 !important; }
 .theme-dark .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.12) !important; }
+
+/* ---- CORREÇÃO DE CONTRASTE: selos de status e botões ----
+   Os chips claros (bg-emerald-100 etc.) ficavam com texto claro
+   sobre fundo claro. Agora viram translúcidos escuros com texto
+   vivo — mesmo padrão do Financeiro dark. */
+.theme-dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.14) !important; border: 1px solid rgba(16, 185, 129, 0.3); }
+.theme-dark .bg-amber-100  { background-color: rgba(245, 158, 11, 0.14) !important; border: 1px solid rgba(245, 158, 11, 0.3); }
+.theme-dark .bg-amber-50   { background-color: rgba(245, 158, 11, 0.12) !important; }
+.theme-dark .bg-blue-100   { background-color: rgba(96, 165, 250, 0.14) !important; border: 1px solid rgba(96, 165, 250, 0.3); }
+.theme-dark .bg-red-100    { background-color: rgba(239, 68, 68, 0.14) !important; border: 1px solid rgba(239, 68, 68, 0.3); }
+.theme-dark .bg-gray-200   { background-color: rgba(148, 163, 184, 0.14) !important; border: 1px solid rgba(148, 163, 184, 0.3); }
+.theme-dark .text-amber-700, .theme-dark .text-amber-800 { color: #FCD34D !important; }
+.theme-dark .text-blue-700  { color: #93C5FD !important; }
+.theme-dark .text-red-700   { color: #FCA5A5 !important; }
+.theme-dark .text-gray-600  { color: #94A3B8 !important; }
+.theme-dark .border-red-200     { border-color: rgba(239, 68, 68, 0.4) !important; }
+.theme-dark .border-emerald-200 { border-color: rgba(16, 185, 129, 0.4) !important; }
+.theme-dark .border-amber-300   { border-color: rgba(245, 158, 11, 0.4) !important; }
+/* botão Cancelar (bg-white + texto vermelho): garante leitura */
+.theme-dark .text-red-600 { color: #F87171 !important; }
+
+/* hierarquia: nomes e valores principais mais presentes */
+.theme-dark .font-medium.truncate { color: #F0EDE5; }
 
 /* formulários */
 .theme-dark input:not([type="checkbox"]):not([type="radio"]),
