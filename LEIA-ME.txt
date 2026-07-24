@@ -1,55 +1,15 @@
-SIGNATURE • ERP FINANCEIRO — FASES 2 + 3 + 4 (num pacote só)
-==============================================================
+SIGNATURE • CORREÇÃO DA BARRA DE FILTROS DO FINANCEIRO
+========================================================
 
-PASSO 1 — SUPABASE: rode sql/12-erp.sql
-Cria: tabela expenses (despesas), coluna payment_method em
-appointments e tabela goals (metas). Tudo com RLS multi-tenant.
+Problema do print: com CSV + Excel + PDF, a linha de ações
+estourava e o botão PDF caía em cima do "Mês passado".
 
-PASSO 2 — GITHUB: substitua os DOIS arquivos
-- app/painel/financeiro/page.tsx  (Financeiro v4)
-- app/painel/agenda/page.tsx      (Agenda: já é a sua versão com
-  o sino + agora o "Marcar pago" pergunta a forma de pagamento)
+Correção: a barra agora são DUAS linhas empilhadas —
+  linha 1: períodos (Este mês / Últimos 7 dias / Mês passado)
+  linha 2: rótulo "COMISSÕES" + Todos/A pagar/Pagas
+           | divisor | rótulo "EXPORTAR" + CSV/Excel/PDF
+Sem colisão em nenhuma largura de tela (no celular os grupos
+quebram de linha com espaçamento correto).
 
-══════════ FASE 2 — DESPESAS + LUCRO REAL + CAIXA ══════════
-• DESPESAS: cadastro direto no Financeiro (categoria, descrição,
-  valor, data, "fixa mensal"), lista com excluir e total.
-• LUCRO REAL: o card de lucro agora é
-  receita − comissões − DESPESAS, com o cálculo exibido embaixo.
-  (Fica vermelho se negativo — sinal honesto.)
-• FLUXO DE CAIXA: Entradas, Comissões quitadas, Despesas, SALDO
-  do período + Próximos recebimentos (agendamentos futuros).
-
-══════════ FASE 3 — FORMAS DE PAGAMENTO + METAS ══════════
-• AGENDA: ao tocar "Marcar pago", abre Pix / Cartão / Dinheiro /
-  Outro. Um toque a mais que vira dado de gestão.
-• FINANCEIRO: gráfico de rosca com a distribuição por forma.
-  Atendimentos antigos aparecem como "Sem registro" (normal).
-• METAS: defina meta diária, semanal e mensal no próprio card.
-  Barra de progresso + % + "faltam R$ X" + PREVISÃO no ritmo
-  atual ("você chega lá em ~N dias").
-
-══════════ FASE 4 — ALERTAS + EXPORT ══════════
-• ALERTAS INTELIGENTES: banner dourado no topo do Financeiro:
-  - queda ≥20% vs período anterior
-  - comissões pendentes há mais de 7 dias
-  - cancelamentos ≥20%
-  - meta mensal a 90%+ (ou atingida 🎉)
-  - profissional sem atendimentos no período
-• EXPORT: além do CSV, agora tem
-  - EXCEL (.xls, abre direto no Excel/Google Sheets)
-  - PDF: gera um relatório elegante e abre a impressão — escolha
-    "Salvar como PDF". (Libere pop-ups se o navegador bloquear.)
-
-HONESTIDADE — O QUE FICOU DE FORA E POR QUÊ
-Alertas automáticos por PUSH/EMAIL (sem abrir o painel) precisam
-de um "agendador" no servidor (Vercel Cron + rota nova + chave
-secreta). Os alertas acima já funcionam sempre que você abre o
-Financeiro. Quando quiser a versão por push/email, me peça a
-"Fase 4b" que eu mando o vercel.json + a rota prontos.
-
-TESTE RÁPIDO
-1. Rode o SQL → recarregue o painel.
-2. Agenda: marque um atendimento como pago → escolha "Pix".
-3. Financeiro: o donut mostra o Pix; cadastre uma despesa
-   (ex.: Produtos, R$ 50) → o Lucro e o Caixa recalculam na hora;
-   defina uma meta mensal → barra + previsão aparecem.
+APLICAR: substituir app/painel/financeiro/page.tsx.
+(É o mesmo v4 do ERP com só esse ajuste — nada mais mudou.)

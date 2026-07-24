@@ -809,9 +809,9 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
         )}
       </div>
 
-      {/* filtros */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 max-w-full scrollbar-none">
+      {/* filtros — duas linhas: períodos em cima, status + export embaixo */}
+      <div className="space-y-2.5 mb-4">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           {PERIODOS.map((pp) => (
             <button
               key={pp.key}
@@ -828,6 +828,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
           ))}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] uppercase tracking-[0.12em] text-[#64748B] font-semibold mr-1">Comissões</span>
           {STATUS_COMISSAO.map((st) => (
             <button
               key={st.key}
@@ -842,6 +843,8 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
               {st.label}
             </button>
           ))}
+          <span className="hidden sm:block w-px h-5 bg-[#C9A96E]/15 mx-1.5" />
+          <span className="text-[10px] uppercase tracking-[0.12em] text-[#64748B] font-semibold mr-1">Exportar</span>
           <button
             onClick={exportarCSV}
             disabled={visiveis.length === 0}
