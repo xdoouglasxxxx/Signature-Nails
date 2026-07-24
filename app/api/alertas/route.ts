@@ -104,7 +104,7 @@ export async function GET(req: Request) {
 
       // digest do dia
       if ((deHoje || []).length > 0) {
-        const primeiro = deHoje![0]
+        const primeiro: any = deHoje![0]
         linhas.push(`Hoje: ${deHoje!.length} atendimento${deHoje!.length === 1 ? "" : "s"}, o primeiro às ${(primeiro.start_time || "").slice(0, 5)}${primeiro.clients?.name ? ` (${primeiro.clients.name.split(" ")[0]})` : ""}.`)
       }
 
