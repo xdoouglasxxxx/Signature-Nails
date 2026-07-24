@@ -1014,7 +1014,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
                       <span className="w-6 h-6 rounded-full bg-[#0A0F1A] border border-[#C9A96E]/15 flex items-center justify-center shrink-0">{iconeServico(l.services?.name)}</span>
                       <span className="truncate">{l.services?.name || "—"}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {l.professionals?.name ? (
                         <>
                           <div className="w-7 h-7 rounded-full bg-[#C9A96E] text-[#0A0F1A] flex items-center justify-center text-[10px] font-bold shrink-0">{iniciais(l.professionals.name)}</div>
