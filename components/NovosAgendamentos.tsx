@@ -154,7 +154,7 @@ export default function NovosAgendamentos({ onIrParaDia }: { onIrParaDia?: (date
 
       {/* painel */}
       {aberto && (
-        <div className="absolute right-0 top-full mt-2 w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl overflow-hidden z-50 border border-[#C9A96E]/15 shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+        <div className="fixed sm:absolute left-3 right-3 top- sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w- sm:max-w-[calc(100vw-2rem)] rounded-2xl overflow-hidden z-[100] border border-[#C9A96E]/15 shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
           style={{ background: "rgba(19,30,46,0.97)", backdropFilter: "blur(16px)" }}>
           {/* topo */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#C9A96E]/10 bg-[#0E1622]/80">

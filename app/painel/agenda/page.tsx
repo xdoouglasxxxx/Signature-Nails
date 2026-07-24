@@ -161,7 +161,7 @@ export default function AgendaPage() {
           <h1 className="text-2xl lg:text-3xl font-serif font-bold">Agenda</h1>
           <p className="text-sm text-navy/60 mt-1">Gerencie os agendamentos do dia.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-auto relative">
           <NovosAgendamentos onIrParaDia={irParaDia} />
           <div className="bg-white rounded-2xl px-4 py-2 border border-gold/15 text-right">
             <p className="text-[10px] font-medium text-navy/60 tracking-wider uppercase">Recebido no dia</p>
