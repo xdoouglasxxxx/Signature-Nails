@@ -37,3 +37,70 @@ body { @apply bg-cream text-navy font-sans; }
   from { transform: translateX(24px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* ============================================================
+   TEMA DARK DO PAINEL — "Ouro Edition"
+   Escopo: tudo dentro de .theme-dark (aplicado no layout do
+   painel). Reveste as páginas existentes traduzindo os tokens
+   claros para o dark, sem tocar nas páginas públicas.
+   Paleta: #0A0F1A fundo • #131E2E cards • #C9A96E ouro
+           #F0EDE5 texto • #8896A8 secundário
+   ============================================================ */
+
+.theme-dark {
+  background: #0A0F1A;
+  color: #F0EDE5;
+}
+
+/* superfícies */
+.theme-dark .bg-white {
+  background-color: rgba(19, 30, 46, 0.72) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(201, 169, 110, 0.10);
+}
+.theme-dark .bg-cream { background-color: #0A0F1A !important; }
+.theme-dark .hover\:bg-cream:hover { background-color: rgba(201, 169, 110, 0.07) !important; }
+
+/* botões primários: navy vira ouro com texto escuro (estilo hotel premium) */
+.theme-dark .bg-navy {
+  background-color: #C9A96E !important;
+  color: #0A0F1A !important;
+}
+.theme-dark .hover\:bg-navy\/90:hover,
+.theme-dark .hover\:bg-black:hover { background-color: #D4B87A !important; color: #0A0F1A !important; }
+.theme-dark .border-navy { border-color: #C9A96E !important; }
+
+/* textos */
+.theme-dark .text-navy { color: #F0EDE5 !important; }
+.theme-dark .text-navy\/80, .theme-dark .text-navy\/70 { color: #B9C2CF !important; }
+.theme-dark .text-navy\/60, .theme-dark .text-navy\/50 { color: #8896A8 !important; }
+.theme-dark .text-navy\/40 { color: #64748B !important; }
+.theme-dark .text-navy\/30 { color: #47566B !important; }
+
+/* bordas discretas viram traço dourado */
+.theme-dark .border-navy\/10 { border-color: rgba(201, 169, 110, 0.16) !important; }
+.theme-dark .border-gold\/15, .theme-dark .border-gold\/10 { border-color: rgba(201, 169, 110, 0.12) !important; }
+
+/* estados esmeralda/vermelho legíveis no escuro */
+.theme-dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.12) !important; }
+.theme-dark .text-emerald-700 { color: #6EE7B7 !important; }
+.theme-dark .text-emerald-600 { color: #34D399 !important; }
+.theme-dark .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.12) !important; }
+
+/* formulários */
+.theme-dark input:not([type="checkbox"]):not([type="radio"]),
+.theme-dark select,
+.theme-dark textarea {
+  background-color: rgba(19, 30, 46, 0.6);
+  border-color: rgba(201, 169, 110, 0.15);
+  color: #F0EDE5;
+}
+.theme-dark input::placeholder,
+.theme-dark textarea::placeholder { color: #64748B; }
+
+/* toques premium */
+.theme-dark .card-glow {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(201, 169, 110, 0.03);
+}
+.theme-dark ::-webkit-scrollbar-thumb { background: rgba(201, 169, 110, 0.45); }

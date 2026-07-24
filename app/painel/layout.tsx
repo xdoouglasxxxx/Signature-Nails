@@ -32,6 +32,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   const [plano, setPlano] = useState<StatusPlano | null>(null)
   const [tipoPlano, setTipoPlano] = useState<string>("trial")
   const [studioId, setStudioId] = useState<string | null>(null)
+  const [studioNome, setStudioNome] = useState<string>("")
   const [push, setPush] = useState<"nao-suportado" | "off" | "on" | "pedindo">("nao-suportado")
 
   useEffect(() => {
@@ -40,9 +41,9 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const { data } = await supabase
-        .from("studios").select("id, plan, plan_until, created_at")
+        .from("studios").select("id, name, plan, plan_until, created_at")
         .eq("owner_id", user.id).maybeSingle()
-      if (data) { setPlano(statusPlano(data)); setTipoPlano(data.plan); setStudioId(data.id) }
+      if (data) { setPlano(statusPlano(data)); setTipoPlano(data.plan); setStudioId(data.id); setStudioNome(data.name || "") }
     })()
   }, [pathname])
 
@@ -94,11 +95,13 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       <button
         onClick={ativarPush}
         className={cn(
-          "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors w-full",
-          push === "on" ? "text-emerald-700 bg-emerald-50" : "text-navy/60 hover:bg-cream hover:text-navy",
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors w-full border-l-2 border-transparent",
+          push === "on"
+            ? "text-emerald-300 bg-emerald-500/10"
+            : "text-[#8896A8] hover:text-[#F0EDE5] hover:bg-[#C9A96E]/5",
         )}
       >
-        {push === "on" ? <BellRing className="w-5 h-5 text-emerald-600" /> : <Bell className="w-5 h-5" />}
+        {push === "on" ? <BellRing className="w-[18px] h-[18px] text-emerald-400" /> : <Bell className="w-[18px] h-[18px]" />}
         {push === "on" ? "Notificações ativas ✓" : push === "pedindo" ? "Ativando..." : "Ativar notificações"}
       </button>
     )
@@ -123,11 +126,13 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
             href={m.href}
             onClick={onClick}
             className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors",
-              ativo ? "bg-gold/15 text-navy" : "text-navy/60 hover:bg-cream hover:text-navy",
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors border-l-2",
+              ativo
+                ? "border-[#C9A96E] bg-[#C9A96E]/[0.07] text-[#F0EDE5]"
+                : "border-transparent text-[#8896A8] hover:text-[#F0EDE5] hover:bg-[#C9A96E]/5",
             )}
           >
-            <m.icon className={cn("w-5 h-5", ativo && "text-gold")} />
+            <m.icon className={cn("w-[18px] h-[18px]", ativo && "text-[#C9A96E]")} />
             {m.label}
           </Link>
         )
@@ -135,53 +140,78 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
     </>
   )
 
+  const LogoBloco = ({ compacto = false }: { compacto?: boolean }) => (
+    <div className="flex items-center gap-3">
+      <div className={cn(
+        "rounded-xl flex items-center justify-center border border-[#C9A96E]/20",
+        compacto ? "w-8 h-8" : "w-10 h-10",
+      )} style={{ background: "rgba(201,169,110,0.06)" }}>
+        <span className={cn("font-serif font-bold text-[#C9A96E]", compacto ? "text-[15px]" : "text-[18px]")}>S</span>
+      </div>
+      <div className="leading-none">
+        <div className="font-serif font-bold tracking-[0.12em] text-[15px] text-[#F0EDE5]">SIGNATURE</div>
+        {!compacto && <div className="text-[9px] tracking-[0.2em] mt-1 font-semibold text-[#8896A8]">STUDIO OS</div>}
+      </div>
+    </div>
+  )
+
   return (
-    <div className="min-h-screen flex bg-cream">
+    <div className="theme-dark min-h-screen flex bg-[#0A0F1A]">
       {/* sidebar desktop */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gold/15 p-4 sticky top-0 h-screen">
-        <div className="flex items-center gap-2 px-2 py-3 mb-4">
-          <div className="w-9 h-9 rounded-full gold-gradient flex items-center justify-center">
-            <span className="font-serif text-base font-bold text-navy leading-none">S</span>
-          </div>
-          <span className="font-serif text-lg font-bold">Signature</span>
+      <aside className="hidden lg:flex flex-col w-64 p-4 sticky top-0 h-screen border-r border-[#C9A96E]/10 bg-[#0A0F1A]">
+        <div className="px-2 py-3 mb-4 border-b border-[#C9A96E]/10 pb-5">
+          <LogoBloco />
         </div>
-        <nav className="flex-1 space-y-1"><NavLinks /></nav>
+        <nav className="flex-1 space-y-0.5 overflow-y-auto scrollbar-none"><NavLinks /></nav>
+        <div className="my-3 h-px bg-[#C9A96E]/10" />
         <BotaoPush />
-        <button onClick={sair} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-navy/60 hover:bg-red-50 hover:text-red-600">
-          <LogOut className="w-5 h-5" /> Sair
+        <button onClick={sair} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-[#8896A8] hover:bg-red-500/10 hover:text-red-400 transition-colors border-l-2 border-transparent">
+          <LogOut className="w-[18px] h-[18px]" /> Sair
         </button>
+        {studioNome && (
+          <div className="mt-3 rounded-xl p-3 flex items-center gap-3 border border-[#C9A96E]/12" style={{ background: "rgba(19,30,46,0.4)" }}>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-[#F0EDE5] border border-[#C9A96E]/20" style={{ background: "rgba(201,169,110,0.06)" }}>
+              {studioNome.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[12px] font-medium truncate text-[#F0EDE5]">{studioNome}</div>
+              <div className="text-[10px] truncate text-[#8896A8]">{tipoPlano === "trial" ? "Teste grátis" : `Plano ${tipoPlano}`}</div>
+            </div>
+            <div className="w-2 h-2 rounded-full bg-[#C9A96E]" style={{ boxShadow: "0 0 12px rgba(201,169,110,0.4)" }} />
+          </div>
+        )}
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* header mobile */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-4 bg-white border-b border-gold/15 sticky top-0 z-30">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full gold-gradient flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-navy" />
-            </div>
-            <span className="font-serif text-lg font-semibold">Painel</span>
-          </div>
-          <button onClick={() => setAberto(!aberto)} className="p-2">
-            {aberto ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        <header className="lg:hidden flex items-center justify-between px-4 py-4 sticky top-0 z-30 border-b border-[#C9A96E]/10 bg-[#0A0F1A]">
+          <LogoBloco compacto />
+          <button onClick={() => setAberto(!aberto)} className="p-2 rounded-xl border border-[#C9A96E]/15 text-[#F0EDE5]" style={{ background: "rgba(19,30,46,0.4)" }}>
+            {aberto ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </header>
 
         {/* menu mobile */}
         {aberto && (
-          <div className="lg:hidden fixed inset-0 top-[65px] bg-white z-20 p-4 space-y-1 overflow-y-auto">
+          <div className="lg:hidden fixed inset-0 top-[65px] z-20 p-4 space-y-0.5 overflow-y-auto bg-[#0A0F1A]">
             <NavLinks onClick={() => setAberto(false)} />
+            <div className="my-3 h-px bg-[#C9A96E]/10" />
             <BotaoPush />
-            <button onClick={sair} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-red-600">
-              <LogOut className="w-5 h-5" /> Sair
+            <button onClick={sair} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-red-400 border-l-2 border-transparent">
+              <LogOut className="w-[18px] h-[18px]" /> Sair
             </button>
           </div>
         )}
 
         {/* banner do trial */}
         {plano?.status === "trial" && (
-          <Link href="/painel/assinatura" className="block bg-navy text-white text-center text-xs font-semibold py-2.5 px-4 hover:bg-navy/90">
+          <Link
+            href="/painel/assinatura"
+            className="block text-center text-xs font-semibold py-2.5 px-4 border-b border-[#C9A96E]/15 text-[#F0EDE5] hover:opacity-90 transition-opacity"
+            style={{ background: "linear-gradient(90deg, rgba(201,169,110,0.14) 0%, rgba(201,169,110,0.06) 50%, rgba(201,169,110,0.14) 100%)" }}
+          >
             ✨ Teste grátis: {plano.diasRestantes} dia{plano.diasRestantes === 1 ? "" : "s"} restante{plano.diasRestantes === 1 ? "" : "s"} —{" "}
-            <span className="text-goldlight underline">garanta o preço de fundadora</span>
+            <span className="text-[#C9A96E] underline underline-offset-2">garanta o preço de fundadora</span>
           </Link>
         )}
 
@@ -191,10 +221,10 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
               <div className="w-16 h-16 rounded-full gold-gradient flex items-center justify-center mx-auto">
                 <Crown className="w-8 h-8 text-navy" />
               </div>
-              <h2 className="font-serif text-2xl font-semibold mt-5">
+              <h2 className="font-serif text-2xl font-semibold mt-5 text-[#F0EDE5]">
                 {tipoPlano === "trial" ? "Seu teste grátis terminou" : "Sua assinatura venceu"}
               </h2>
-              <p className="text-sm text-navy/60 mt-2 leading-relaxed">
+              <p className="text-sm text-[#8896A8] mt-2 leading-relaxed">
                 Sua página ficou temporariamente indisponível para as clientes.
                 {tipoPlano === "trial" ? " Ative sua assinatura" : " Renove"} para voltar a receber
                 agendamentos — leva 2 minutos.
