@@ -622,9 +622,9 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
       </div>
 
       {/* fluxo de caixa • metas • formas de pagamento */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5 mb-4">
+      <div className="grid grid-cols-1 gap-4 md:gap-5 mb-4">
         {/* fluxo de caixa */}
-        <div className={cn("rounded-2xl p-5 lg:col-span-2", CARD)}>
+        <div className={cn("rounded-2xl p-6 w-full", CARD)}>
           <h2 className="font-serif text-[18px] font-semibold text-[#F0EDE5] flex items-center gap-2 mb-4">
             <Landmark className="w-4 h-4 text-[#C9A96E]" /> Fluxo de caixa
           </h2>
@@ -740,7 +740,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
       </div>
 
       {/* despesas */}
-      <div className={cn("rounded-2xl p-5 mb-8", CARD)}>
+      <div className={cn("rounded-2xl p-6 w-full", CARD)}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-serif text-[18px] font-semibold text-[#F0EDE5] flex items-center gap-2">
             <Receipt className="w-4 h-4 text-[#C9A96E]" /> Despesas do período
