@@ -1,47 +1,55 @@
-SIGNATURE • FINANCEIRO v3 — "ERP DO SALÃO" FASE 1
-===================================================
+SIGNATURE • ERP FINANCEIRO — FASES 2 + 3 + 4 (num pacote só)
+==============================================================
 
-APLICAR: substituir app/painel/financeiro/page.tsx.
-Sem SQL, sem dependência nova. Tudo da versão atual continua
-(3 cards, filtros, tabela, quitar, pagar por profissional, CSV).
+PASSO 1 — SUPABASE: rode sql/12-erp.sql
+Cria: tabela expenses (despesas), coluna payment_method em
+appointments e tabela goals (metas). Tudo com RLS multi-tenant.
 
-O QUE ENTROU (só com os dados que o sistema já coleta):
+PASSO 2 — GITHUB: substitua os DOIS arquivos
+- app/painel/financeiro/page.tsx  (Financeiro v4)
+- app/painel/agenda/page.tsx      (Agenda: já é a sua versão com
+  o sino + agora o "Marcar pago" pergunta a forma de pagamento)
 
-1. PULSO — 3 cards fixos no topo: faturamento de HOJE, dos
-   ÚLTIMOS 7 DIAS e DESTE MÊS (independem do filtro de período).
+══════════ FASE 2 — DESPESAS + LUCRO REAL + CAIXA ══════════
+• DESPESAS: cadastro direto no Financeiro (categoria, descrição,
+  valor, data, "fixa mensal"), lista com excluir e total.
+• LUCRO REAL: o card de lucro agora é
+  receita − comissões − DESPESAS, com o cálculo exibido embaixo.
+  (Fica vermelho se negativo — sinal honesto.)
+• FLUXO DE CAIXA: Entradas, Comissões quitadas, Despesas, SALDO
+  do período + Próximos recebimentos (agendamentos futuros).
 
-2. SPARKLINE — minigráfico de barras douradas no card de
-   faturamento mostrando a evolução dia a dia do período
-   (passe o mouse para ver o valor de cada dia).
+══════════ FASE 3 — FORMAS DE PAGAMENTO + METAS ══════════
+• AGENDA: ao tocar "Marcar pago", abre Pix / Cartão / Dinheiro /
+  Outro. Um toque a mais que vira dado de gestão.
+• FINANCEIRO: gráfico de rosca com a distribuição por forma.
+  Atendimentos antigos aparecem como "Sem registro" (normal).
+• METAS: defina meta diária, semanal e mensal no próprio card.
+  Barra de progresso + % + "faltam R$ X" + PREVISÃO no ritmo
+  atual ("você chega lá em ~N dias").
 
-3. +5 KPIs DE INTELIGÊNCIA:
-   - Ticket médio
-   - Atendimentos (total vs pagos)
-   - Clientes novos vs recorrentes (primeira visita no período)
-   - Taxa de cancelamento (acende dourado se ≥15%)
-   - A RECEBER: atendimentos já realizados e não pagos (a sua
-     "inadimplência" — qtd e valor)
+══════════ FASE 4 — ALERTAS + EXPORT ══════════
+• ALERTAS INTELIGENTES: banner dourado no topo do Financeiro:
+  - queda ≥20% vs período anterior
+  - comissões pendentes há mais de 7 dias
+  - cancelamentos ≥20%
+  - meta mensal a 90%+ (ou atingida 🎉)
+  - profissional sem atendimentos no período
+• EXPORT: além do CSV, agora tem
+  - EXCEL (.xls, abre direto no Excel/Google Sheets)
+  - PDF: gera um relatório elegante e abre a impressão — escolha
+    "Salvar como PDF". (Libere pop-ups se o navegador bloquear.)
 
-4. RANKINGS — top 5 profissionais (faturamento, clientes, ticket)
-   e top 5 serviços (vendas, ticket, faturamento).
+HONESTIDADE — O QUE FICOU DE FORA E POR QUÊ
+Alertas automáticos por PUSH/EMAIL (sem abrir o painel) precisam
+de um "agendador" no servidor (Vercel Cron + rota nova + chave
+secreta). Os alertas acima já funcionam sempre que você abre o
+Financeiro. Quando quiser a versão por push/email, me peça a
+"Fase 4b" que eu mando o vercel.json + a rota prontos.
 
-5. INSIGHTS AUTOMÁTICOS — card dourado com frases calculadas:
-   crescimento vs período anterior, share do top profissional,
-   serviço campeão, dia da semana que concentra a receita,
-   valor a receber, alerta de cancelamentos, novos vs recorrentes.
-   (Só aparecem os que fazem sentido com os dados do período.)
-
-ROADMAP DAS PRÓXIMAS FASES (me peça quando quiser):
-- FASE 2: Despesas (aluguel, produtos, marketing...) + Lucro REAL
-  (receita − comissões − despesas) + Fluxo de caixa.
-  Precisa: tabela expenses no Supabase (eu mando o SQL).
-- FASE 3: Formas de pagamento (Pix/cartão/dinheiro + gráfico) e
-  Metas com progresso e previsão.
-  Precisa: coluna payment_method + tabela goals (SQL) e um ajuste
-  na Agenda para escolher a forma ao marcar pago.
-- FASE 4: Alertas inteligentes por push/email (queda de
-  faturamento, comissão parada, meta próxima) + export PDF/Excel.
-
-Observação: "clientes novos" usa os últimos 180 dias como base de
-comparação — para o histórico do seu volume atual é mais que
-suficiente e mantém a página rápida.
+TESTE RÁPIDO
+1. Rode o SQL → recarregue o painel.
+2. Agenda: marque um atendimento como pago → escolha "Pix".
+3. Financeiro: o donut mostra o Pix; cadastre uma despesa
+   (ex.: Produtos, R$ 50) → o Lucro e o Caixa recalculam na hora;
+   defina uma meta mensal → barra + previsão aparecem.

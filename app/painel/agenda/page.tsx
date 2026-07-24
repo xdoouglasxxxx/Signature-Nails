@@ -38,6 +38,7 @@ export default function AgendaPage() {
   const [apps, setApps] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [pagandoId, setPagandoId] = useState<string | null>(null)
   const [toasts, setToasts] = useState<{ id: number; tipo: "ok" | "erro" | "aviso"; msg: string }[]>([])
 
   const toast = (tipo: "ok" | "erro" | "aviso", msg: string) => {
@@ -88,6 +89,23 @@ export default function AgendaPage() {
     if (error) { toast("erro", "Erro ao processar sua ação. Tente novamente."); return }
     setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)))
     toast(status === "cancelado" ? "aviso" : "ok", MSG_STATUS[status] || "Atualizado.")
+  }
+
+  const FORMAS_PG = [
+    { key: "pix", label: "Pix" },
+    { key: "cartao", label: "Cartão" },
+    { key: "dinheiro", label: "Dinheiro" },
+    { key: "outro", label: "Outro" },
+  ]
+
+  const marcarPago = async (id: string, metodo: string) => {
+    setPagandoId(null)
+    setUpdating(id)
+    const { error } = await supabase.from("appointments").update({ status: "pago", payment_method: metodo }).eq("id", id)
+    setUpdating(null)
+    if (error) { toast("erro", "Erro ao processar sua ação. Tente novamente."); return }
+    setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status: "pago", payment_method: metodo } : a)))
+    toast("ok", `Recebido: ${FORMAS_PG.find((f) => f.key === metodo)?.label} 💰`)
   }
 
   const liberarAgora = async (app: any) => {
@@ -231,9 +249,21 @@ export default function AgendaPage() {
                         </button>
                       )}
                       {(app.status === "pendente" || app.status === "confirmado") && (
-                        <button onClick={() => setStatus(app.id, "pago")} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-navy text-white inline-flex items-center gap-1">
-                          <DollarSign className="w-3.5 h-3.5" /> Marcar pago
-                        </button>
+                        pagandoId === app.id ? (
+                          <span className="inline-flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[11px] text-navy/60 font-semibold">Recebido no:</span>
+                            {FORMAS_PG.map((f) => (
+                              <button key={f.key} onClick={() => marcarPago(app.id, f.key)} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-navy text-white">
+                                {f.label}
+                              </button>
+                            ))}
+                            <button onClick={() => setPagandoId(null)} aria-label="Fechar" className="text-xs px-2.5 py-1.5 rounded-full border border-navy/10 text-navy/60">✕</button>
+                          </span>
+                        ) : (
+                          <button onClick={() => setPagandoId(app.id)} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-navy text-white inline-flex items-center gap-1">
+                            <DollarSign className="w-3.5 h-3.5" /> Marcar pago
+                          </button>
+                        )
                       )}
                       <button onClick={() => setStatus(app.id, "cancelado")} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white border border-red-200 text-red-600 inline-flex items-center gap-1">
                         <X className="w-3.5 h-3.5" /> Cancelar
