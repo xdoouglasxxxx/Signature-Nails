@@ -1,0 +1,43 @@
+SIGNATURE • SINO DE NOVOS AGENDAMENTOS
+=======================================
+
+O PROBLEMA QUE ISSO RESOLVE
+A Agenda mostra só o dia selecionado. Agendamento feito para outro dia
+ficava invisível até você navegar até a data. O sino mostra TUDO que foi
+agendado desde sua última olhada, independente do dia — e atualiza em
+tempo real, sem recarregar a página.
+
+COMO APLICAR (3 passos)
+
+1) SUPABASE — rode o sql/9-novos-agendamentos.sql no SQL Editor.
+   (Desta vez tem SQL sim: cria a coluna created_at e liga o tempo real.)
+
+2) GITHUB — suba components/NovosAgendamentos.tsx para a pasta
+   components/ do repo.
+
+3) AGENDA — na página da Agenda (app/agenda/page.tsx ou equivalente):
+
+   a. Importe no topo:
+      import NovosAgendamentos from "@/components/NovosAgendamentos"
+
+   b. Coloque o sino no cabeçalho, ao lado do card "Recebido no dia":
+      <NovosAgendamentos onIrParaDia={(date) => setDia(date)} />
+
+      • Troque setDia pelo nome do estado que controla o dia selecionado
+        na sua Agenda (o mesmo que os botões < > alteram).
+      • Se preferir não integrar a navegação agora, use só
+        <NovosAgendamentos /> — o botão "Ver dia" não aparece,
+        mas o sino e o contador funcionam normalmente.
+
+COMO FUNCIONA
+• Badge laranja = quantidade de agendamentos criados desde o último
+  "Marcar visto" (guardado por estúdio, no navegador/dispositivo).
+• Lista mostra data, hora, cliente, serviço, profissional e há quanto
+  tempo foi criado. Itens novos ficam com fundo destacado.
+• Sem novos: mostra os próximos 5 agendamentos futuros.
+• Tempo real via Supabase Realtime: cliente agenda → sino atualiza
+  na hora em qualquer painel aberto.
+
+OBSERVAÇÃO
+O "visto" é por dispositivo (localStorage). Você e sua irmã podem
+zerar o contador cada um no seu aparelho, de forma independente.
