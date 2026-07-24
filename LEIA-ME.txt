@@ -1,50 +1,47 @@
-SIGNATURE • EQUIPE + PERFIL DO PROFISSIONAL (VERSÃO FINAL)
-============================================================
+SIGNATURE • FINANCEIRO v3 — "ERP DO SALÃO" FASE 1
+===================================================
 
-"TEM DOIS" — E É ASSIM MESMO ✓
-- app/painel/equipe/page.tsx        → a LISTA da equipe
-- app/painel/equipe/[id]/page.tsx   → o PERFIL de um profissional
-Os dois convivem; o [id] com colchetes é como o Next.js cria
-páginas dinâmicas (uma por profissional).
+APLICAR: substituir app/painel/financeiro/page.tsx.
+Sem SQL, sem dependência nova. Tudo da versão atual continua
+(3 cards, filtros, tabela, quitar, pagar por profissional, CSV).
 
-DESCOBERTA IMPORTANTE (por isso esta versão substitui a v2):
-Seu sistema JÁ TINHA foto com upload (avatar_url), cargo (role)
-e jornada por dia (working_hours). Então:
-- O perfil agora usa o schema REAL: foto trocada por CLIQUE
-  (upload de arquivo, igual na Equipe), jornada com o mesmo
-  editor de dias da Equipe, cargo editável.
-- O SQL novo (11-perfil-v2.sql) cria SÓ o que falta de verdade:
-  folgas por data e avaliações.
+O QUE ENTROU (só com os dados que o sistema já coleta):
 
-COMO APLICAR
+1. PULSO — 3 cards fixos no topo: faturamento de HOJE, dos
+   ÚLTIMOS 7 DIAS e DESTE MÊS (independem do filtro de período).
 
-1) SUPABASE — rode sql/11-perfil-v2.sql
-   (Se você chegou a rodar o 11-perfil.sql antigo, sem problema:
-   o novo tem uma seção opcional comentada para limpar as colunas
-   redundantes.)
+2. SPARKLINE — minigráfico de barras douradas no card de
+   faturamento mostrando a evolução dia a dia do período
+   (passe o mouse para ver o valor de cada dia).
 
-2) GITHUB — substitua os DOIS arquivos:
-   - app/painel/equipe/page.tsx
-   - app/painel/equipe/[id]/page.tsx
+3. +5 KPIs DE INTELIGÊNCIA:
+   - Ticket médio
+   - Atendimentos (total vs pagos)
+   - Clientes novos vs recorrentes (primeira visita no período)
+   - Taxa de cancelamento (acende dourado se ≥15%)
+   - A RECEBER: atendimentos já realizados e não pagos (a sua
+     "inadimplência" — qtd e valor)
 
-O QUE MUDA NA PRÁTICA
-LISTA DA EQUIPE:
-- Nome maior e em destaque; clicar no nome (ou na setinha ›)
-  abre o perfil completo
-- Foto continua trocando pelo clique no avatar
-- Todo o resto intacto: criar/editar, comissões do mês, serviços,
-  horários, ativar/inativar, trava do plano Pro
+4. RANKINGS — top 5 profissionais (faturamento, clientes, ticket)
+   e top 5 serviços (vendas, ticket, faturamento).
 
-PERFIL DO PROFISSIONAL:
-- Foto com troca por clique (mesmo upload da Equipe)
-- Cargo + comissão + estrelas de avaliação + serviços no cabeçalho
-- 4 KPIs do mês, próximos agendamentos, clientes, histórico
-- Configurações: nome, cargo, comissão e jornada (mesmo editor
-  de dias da Equipe — respeitado nos agendamentos como já era)
-- Folgas por data (novo) e Avaliações (novo)
+5. INSIGHTS AUTOMÁTICOS — card dourado com frases calculadas:
+   crescimento vs período anterior, share do top profissional,
+   serviço campeão, dia da semana que concentra a receita,
+   valor a receber, alerta de cancelamentos, novos vs recorrentes.
+   (Só aparecem os que fazem sentido com os dados do período.)
 
-AINDA PENDENTE (avisos honestos)
-- Folgas por data ainda não bloqueiam a página pública — preciso
-  do arquivo da página de agendamento do cliente para integrar.
-- Coleta de avaliações pelo cliente: próxima etapa (página pública).
-- Hierarquia do Dashboard e Clientes: me cola esses dois page.tsx.
+ROADMAP DAS PRÓXIMAS FASES (me peça quando quiser):
+- FASE 2: Despesas (aluguel, produtos, marketing...) + Lucro REAL
+  (receita − comissões − despesas) + Fluxo de caixa.
+  Precisa: tabela expenses no Supabase (eu mando o SQL).
+- FASE 3: Formas de pagamento (Pix/cartão/dinheiro + gráfico) e
+  Metas com progresso e previsão.
+  Precisa: coluna payment_method + tabela goals (SQL) e um ajuste
+  na Agenda para escolher a forma ao marcar pago.
+- FASE 4: Alertas inteligentes por push/email (queda de
+  faturamento, comissão parada, meta próxima) + export PDF/Excel.
+
+Observação: "clientes novos" usa os últimos 180 dias como base de
+comparação — para o histórico do seu volume atual é mais que
+suficiente e mantém a página rápida.

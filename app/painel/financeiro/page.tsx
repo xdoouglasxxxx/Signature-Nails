@@ -6,7 +6,8 @@ import { useCallback, useEffect, useState } from "react"
 import { format, startOfMonth, endOfMonth, subMonths, subDays } from "date-fns"
 import {
   Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2, Check,
-  CalendarDays, Download, Scissors, Sparkles,
+  CalendarDays, Download, Scissors, Sparkles, Trophy, Lightbulb,
+  Users, Percent, HandCoins, UserPlus,
 } from "lucide-react"
 import { brl, cn } from "@/lib/utils"
 
@@ -23,15 +24,17 @@ const STATUS_COMISSAO = [
 ]
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
+const DIAS_LONGO = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
 
-// paleta Ouro Edition
 const CARD = "bg-[#131E2E]/70 border border-[#C9A96E]/10"
 const CHIP_OFF = "bg-[#131E2E]/60 text-[#8896A8] border-[#C9A96E]/12 hover:border-[#C9A96E]/30"
 
 export default function FinanceiroPage() {
   const { studio, loading: loadingStudio } = useStudio()
   const supabase = createClient()
-  const [linhas, setLinhas] = useState<any[]>([])
+  const [linhas, setLinhas] = useState<any[]>([])          // pagos do período
+  const [todosPeriodo, setTodosPeriodo] = useState<any[]>([]) // todos os status do período
+  const [historico, setHistorico] = useState<any[]>([])    // 180 dias (não cancelados)
   const [equipe, setEquipe] = useState<any[]>([])
   const [fatAnterior, setFatAnterior] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
@@ -40,6 +43,8 @@ export default function FinanceiroPage() {
   const [statusFiltro, setStatusFiltro] = useState("todos")
   const [quitando, setQuitando] = useState<string | null>(null)
   const [msg, setMsg] = useState("")
+
+  const hojeStr = format(new Date(), "yyyy-MM-dd")
 
   const range = (p = periodo) => {
     const hoje = new Date()
@@ -63,10 +68,11 @@ export default function FinanceiroPage() {
     setLoading(true)
     const { ini, fim } = range()
     const ant = rangeAnterior()
-    const [{ data: apps }, { data: profs }, { data: appsAnt }] = await Promise.all([
+    const ini180 = format(subDays(new Date(), 180), "yyyy-MM-dd")
+    const [{ data: apps }, { data: profs }, { data: appsAnt }, { data: tds }, { data: hist }] = await Promise.all([
       supabase
         .from("appointments")
-        .select("id, date, price_at_time, commission_paid, professional_id, clients(name), services(name), professionals(name, commission_percent)")
+        .select("id, date, start_time, price_at_time, commission_paid, professional_id, clients(name), services(name), professionals(name, commission_percent)")
         .eq("studio_id", studio.id)
         .eq("status", "pago")
         .gte("date", ini)
@@ -81,10 +87,26 @@ export default function FinanceiroPage() {
         .eq("status", "pago")
         .gte("date", ant.ini)
         .lte("date", ant.fim),
+      supabase
+        .from("appointments")
+        .select("id, date, status, price_at_time, clients(name)")
+        .eq("studio_id", studio.id)
+        .gte("date", ini)
+        .lte("date", fim),
+      supabase
+        .from("appointments")
+        .select("date, status, price_at_time, clients(name)")
+        .eq("studio_id", studio.id)
+        .neq("status", "cancelado")
+        .gte("date", ini180)
+        .lte("date", hojeStr)
+        .limit(2000),
     ])
     setLinhas(apps || [])
     setEquipe(profs || [])
     setFatAnterior((appsAnt || []).reduce((acc, a) => acc + (a.price_at_time || 0), 0))
+    setTodosPeriodo(tds || [])
+    setHistorico(hist || [])
     setLoading(false)
   }, [supabase, studio, periodo]) // eslint-disable-line
 
@@ -112,23 +134,105 @@ export default function FinanceiroPage() {
   const fatPeriodoCheio = linhas.reduce((acc, l) => acc + (l.price_at_time || 0), 0)
   const delta = fatAnterior && fatAnterior > 0 ? ((fatPeriodoCheio - fatAnterior) / fatAnterior) * 100 : null
 
+  // ---------- PULSO (independente do filtro de período) ----------
+  const pagosHist = historico.filter((h) => h.status === "pago")
+  const fatDia = pagosHist.filter((h) => h.date === hojeStr).reduce((a, h) => a + (h.price_at_time || 0), 0)
+  const ini7 = format(subDays(new Date(), 6), "yyyy-MM-dd")
+  const fatSemana = pagosHist.filter((h) => h.date >= ini7).reduce((a, h) => a + (h.price_at_time || 0), 0)
+  const iniMesAtual = format(startOfMonth(new Date()), "yyyy-MM-dd")
+  const fatMesAtual = pagosHist.filter((h) => h.date >= iniMesAtual).reduce((a, h) => a + (h.price_at_time || 0), 0)
+
+  // ---------- KPIs de inteligência (do período filtrado) ----------
+  const naoCancelados = todosPeriodo.filter((t) => t.status !== "cancelado")
+  const cancelados = todosPeriodo.filter((t) => t.status === "cancelado")
+  const taxaCancel = todosPeriodo.length > 0 ? (cancelados.length / todosPeriodo.length) * 100 : 0
+  const aReceber = todosPeriodo.filter((t) => (t.status === "pendente" || t.status === "confirmado") && t.date <= hojeStr)
+  const aReceberValor = aReceber.reduce((a, t) => a + (t.price_at_time || 0), 0)
+  const ticketPeriodo = visiveis.length > 0 ? faturamento / visiveis.length : 0
+
+  // clientes novos vs recorrentes (primeiro atendimento dentro do período?)
+  const { ini: iniP } = range()
+  const primeiraVisita = new Map<string, string>()
+  for (const h of historico) {
+    const n = h.clients?.name
+    if (!n) continue
+    const atual = primeiraVisita.get(n)
+    if (!atual || h.date < atual) primeiraVisita.set(n, h.date)
+  }
+  const clientesDoPeriodo = new Set(naoCancelados.map((t) => t.clients?.name).filter(Boolean))
+  let novos = 0, recorrentes = 0
+  clientesDoPeriodo.forEach((n) => {
+    const pv = primeiraVisita.get(n as string)
+    if (pv && pv >= iniP) novos += 1
+    else recorrentes += 1
+  })
+
+  // ---------- sparkline (faturamento por dia do período) ----------
+  const porDia = new Map<string, number>()
+  for (const l of linhas) porDia.set(l.date, (porDia.get(l.date) || 0) + (l.price_at_time || 0))
+  const diasOrdenados = Array.from(porDia.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+  const maxDia = Math.max(1, ...diasOrdenados.map(([, v]) => v))
+
+  // ---------- rankings ----------
   const porProf = equipe
     .map((pr) => {
       const doProf = linhas.filter((l) => l.professional_id === pr.id)
       const fat = doProf.reduce((acc, l) => acc + (l.price_at_time || 0), 0)
       const com = doProf.reduce((acc, l) => acc + comissaoDe(l), 0)
       const aPagar = doProf.filter((l) => !l.commission_paid).reduce((acc, l) => acc + comissaoDe(l), 0)
+      const cli = new Set(doProf.map((l) => l.clients?.name).filter(Boolean)).size
       return {
         ...pr,
         servicos: doProf.length,
         faturamento: fat,
         comissao: com,
         aPagar,
+        clientes: cli,
         ticket: doProf.length > 0 ? fat / doProf.length : 0,
         idsPendentes: doProf.filter((l) => !l.commission_paid && comissaoDe(l) > 0).map((l) => l.id),
       }
     })
     .filter((pr) => pr.servicos > 0)
+
+  const rankProfs = [...porProf].sort((a, b) => b.faturamento - a.faturamento).slice(0, 5)
+
+  const porServico = new Map<string, { nome: string; qtd: number; fat: number }>()
+  for (const l of linhas) {
+    const n = l.services?.name || "—"
+    const s = porServico.get(n) || { nome: n, qtd: 0, fat: 0 }
+    s.qtd += 1
+    s.fat += l.price_at_time || 0
+    porServico.set(n, s)
+  }
+  const rankServicos = Array.from(porServico.values()).sort((a, b) => b.fat - a.fat).slice(0, 5)
+
+  // ---------- insights automáticos ----------
+  const insights: string[] = []
+  if (delta !== null && Math.abs(delta) >= 5)
+    insights.push(`O faturamento ${delta >= 0 ? "cresceu" : "caiu"} ${Math.abs(delta).toFixed(0)}% em relação ao período anterior.`)
+  if (rankProfs.length > 1 && fatPeriodoCheio > 0) {
+    const share = (rankProfs[0].faturamento / fatPeriodoCheio) * 100
+    if (share >= 25) insights.push(`${rankProfs[0].name.split(" ")[0]} representa ${share.toFixed(0)}% da receita do período.`)
+  }
+  if (rankServicos.length > 0 && rankServicos[0].fat > 0)
+    insights.push(`"${rankServicos[0].nome}" é o serviço que mais fatura: ${brl(rankServicos[0].fat)} (${rankServicos[0].qtd}x).`)
+  {
+    const fatPorDiaSemana = new Map<number, number>()
+    for (const l of linhas) {
+      const [a, m, d] = l.date.split("-").map(Number)
+      const ds = new Date(a, m - 1, d).getDay()
+      fatPorDiaSemana.set(ds, (fatPorDiaSemana.get(ds) || 0) + (l.price_at_time || 0))
+    }
+    const topDia = Array.from(fatPorDiaSemana.entries()).sort((a, b) => b[1] - a[1])[0]
+    if (topDia && fatPeriodoCheio > 0 && topDia[1] / fatPeriodoCheio >= 0.25)
+      insights.push(`${DIAS_LONGO[topDia[0]].charAt(0).toUpperCase() + DIAS_LONGO[topDia[0]].slice(1)}s concentram ${((topDia[1] / fatPeriodoCheio) * 100).toFixed(0)}% do faturamento.`)
+  }
+  if (aReceber.length > 0)
+    insights.push(`Você tem ${brl(aReceberValor)} a receber de ${aReceber.length} atendimento${aReceber.length === 1 ? "" : "s"} já realizado${aReceber.length === 1 ? "" : "s"} e não pago${aReceber.length === 1 ? "" : "s"}.`)
+  if (taxaCancel >= 15)
+    insights.push(`Atenção: a taxa de cancelamento está em ${taxaCancel.toFixed(0)}% no período.`)
+  if (novos > 0 && recorrentes > 0)
+    insights.push(`${novos} cliente${novos === 1 ? " novo" : "s novos"} e ${recorrentes} recorrente${recorrentes === 1 ? "" : "s"} no período.`)
 
   const notificar = (texto: string) => { setMsg(texto); setTimeout(() => setMsg(""), 4000) }
 
@@ -194,7 +298,7 @@ export default function FinanceiroPage() {
   return (
     <div className="text-[#F0EDE5]">
       {/* cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
         <div>
           <h1 className="font-serif text-[38px] md:text-[46px] font-semibold leading-[1] tracking-[-0.01em] text-[#F0EDE5]">Financeiro</h1>
           <p className="mt-2.5 text-[14px] text-[#8896A8]">Controle de comissões e faturamento — só atendimentos pagos entram na conta.</p>
@@ -207,11 +311,28 @@ export default function FinanceiroPage() {
         </div>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-8">
-        {/* faturamento */}
+      {/* PULSO: hoje / semana / mês (independe do filtro) */}
+      <div className="grid grid-cols-3 gap-3 md:gap-4 mb-4">
+        {[
+          { rot: "Hoje", val: fatDia },
+          { rot: "Últimos 7 dias", val: fatSemana },
+          { rot: "Este mês", val: fatMesAtual },
+        ].map((p) => (
+          <div key={p.rot} className={cn("rounded-2xl px-4 py-3.5 flex items-center justify-between", CARD)}>
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.12em] text-[#8896A8] font-semibold">{p.rot}</p>
+              <p className="font-serif text-[20px] md:text-[22px] font-semibold leading-none mt-1 text-[#F0EDE5]">{brl(p.val)}</p>
+            </div>
+            <span className="w-1.5 h-8 rounded-full bg-gradient-to-b from-[#C9A96E] to-[#C9A96E]/20 hidden sm:block" />
+          </div>
+        ))}
+      </div>
+
+      {/* KPIs principais */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-4">
+        {/* faturamento + sparkline */}
         <div className={cn("rounded-2xl p-6", CARD)}>
-          <div className="flex items-start justify-between mb-7">
+          <div className="flex items-start justify-between mb-5">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-[#C9A96E]/15 bg-[#C9A96E]/[0.07]">
               <Wallet className="w-[18px] h-[18px] text-[#C9A96E]" />
             </div>
@@ -232,6 +353,19 @@ export default function FinanceiroPage() {
             <p className="font-serif text-[32px] font-semibold leading-none text-[#F0EDE5]">{brl(faturamento)}</p>
             <p className="text-[13px] text-[#8896A8] pt-1">{visiveis.length} serviço{visiveis.length === 1 ? "" : "s"} realizado{visiveis.length === 1 ? "" : "s"}</p>
           </div>
+          {/* sparkline */}
+          {diasOrdenados.length > 1 && (
+            <div className="mt-4 flex items-end gap-[3px] h-10">
+              {diasOrdenados.map(([d, v]) => (
+                <div
+                  key={d}
+                  title={`${fmtData(d)}: ${brl(v)}`}
+                  className="flex-1 rounded-t-sm bg-gradient-to-t from-[#C9A96E]/30 to-[#C9A96E] min-w-[3px]"
+                  style={{ height: `${Math.max(12, (v / maxDia) * 100)}%` }}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* comissões a pagar */}
@@ -277,6 +411,24 @@ export default function FinanceiroPage() {
             <p className="text-[13px] text-[#7FBF9D] pt-1">{margem.toFixed(1).replace(".", ",")}% do faturamento</p>
           </div>
         </div>
+      </div>
+
+      {/* KPIs de inteligência */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-8">
+        {[
+          { icone: HandCoins, rot: "Ticket médio", val: brl(ticketPeriodo), extra: "por serviço pago" },
+          { icone: CalendarDays, rot: "Atendimentos", val: String(naoCancelados.length), extra: `${visiveis.length} pago${visiveis.length === 1 ? "" : "s"}` },
+          { icone: UserPlus, rot: "Clientes novos", val: String(novos), extra: `${recorrentes} recorrente${recorrentes === 1 ? "" : "s"}` },
+          { icone: Percent, rot: "Cancelamento", val: `${taxaCancel.toFixed(0)}%`, extra: `${cancelados.length} no período`, alerta: taxaCancel >= 15 },
+          { icone: Wallet, rot: "A receber", val: brl(aReceberValor), extra: `${aReceber.length} não pago${aReceber.length === 1 ? "" : "s"}`, alerta: aReceber.length > 0 },
+        ].map((k: any) => (
+          <div key={k.rot} className={cn("rounded-2xl p-4", CARD)}>
+            <k.icone className={cn("w-4 h-4 mb-3", k.alerta ? "text-[#E8C989]" : "text-[#C9A96E]")} />
+            <p className="text-[9px] uppercase tracking-[0.12em] text-[#8896A8] font-semibold">{k.rot}</p>
+            <p className={cn("font-serif text-[19px] font-semibold leading-none mt-1", k.alerta ? "text-[#E8C989]" : "text-[#F0EDE5]")}>{k.val}</p>
+            <p className="text-[10px] text-[#64748B] mt-1">{k.extra}</p>
+          </div>
+        ))}
       </div>
 
       {/* filtros */}
@@ -514,6 +666,69 @@ export default function FinanceiroPage() {
         </div>
       )}
 
+      {/* rankings */}
+      {(rankProfs.length > 0 || rankServicos.length > 0) && (
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+          <div className={cn("rounded-2xl overflow-hidden", CARD)}>
+            <div className="px-5 py-4 border-b border-[#C9A96E]/[0.08] flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-[#C9A96E]" />
+              <h2 className="font-serif text-[18px] font-semibold text-[#F0EDE5]">Ranking de profissionais</h2>
+            </div>
+            <div className="divide-y divide-[#C9A96E]/[0.06]">
+              {rankProfs.map((pr, i) => (
+                <div key={pr.id} className="px-5 py-3 flex items-center gap-3">
+                  <span className={cn("w-6 text-center font-serif text-[16px] font-semibold", i === 0 ? "text-[#E8C989]" : "text-[#64748B]")}>{i + 1}</span>
+                  <div className="w-8 h-8 rounded-full bg-[#C9A96E] text-[#0A0F1A] flex items-center justify-center text-[10px] font-bold shrink-0">{iniciais(pr.name)}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold truncate text-[#F0EDE5]">{pr.name}</p>
+                    <p className="text-[11px] text-[#8896A8]">{pr.servicos} serviço{pr.servicos === 1 ? "" : "s"} • {pr.clientes} cliente{pr.clientes === 1 ? "" : "s"} • ticket {brl(pr.ticket)}</p>
+                  </div>
+                  <span className="text-[13px] font-semibold text-[#F0EDE5] shrink-0">{brl(pr.faturamento)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={cn("rounded-2xl overflow-hidden", CARD)}>
+            <div className="px-5 py-4 border-b border-[#C9A96E]/[0.08] flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-[#C9A96E]" />
+              <h2 className="font-serif text-[18px] font-semibold text-[#F0EDE5]">Ranking de serviços</h2>
+            </div>
+            <div className="divide-y divide-[#C9A96E]/[0.06]">
+              {rankServicos.map((sv, i) => (
+                <div key={sv.nome} className="px-5 py-3 flex items-center gap-3">
+                  <span className={cn("w-6 text-center font-serif text-[16px] font-semibold", i === 0 ? "text-[#E8C989]" : "text-[#64748B]")}>{i + 1}</span>
+                  <span className="w-8 h-8 rounded-full bg-[#0A0F1A] border border-[#C9A96E]/15 flex items-center justify-center shrink-0">{iconeServico(sv.nome)}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold truncate text-[#F0EDE5]">{sv.nome}</p>
+                    <p className="text-[11px] text-[#8896A8]">{sv.qtd} realizado{sv.qtd === 1 ? "" : "s"} • ticket {brl(sv.qtd ? sv.fat / sv.qtd : 0)}</p>
+                  </div>
+                  <span className="text-[13px] font-semibold text-[#F0EDE5] shrink-0">{brl(sv.fat)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* insights */}
+      {insights.length > 0 && (
+        <div className={cn("mt-5 rounded-2xl p-5 border border-[#C9A96E]/20", CARD)} style={{ background: "linear-gradient(145deg, rgba(201,169,110,0.06) 0%, rgba(19,30,46,0.7) 40%)" }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Lightbulb className="w-4 h-4 text-[#E8C989]" />
+            <h2 className="font-serif text-[18px] font-semibold text-[#F0EDE5]">Insights do período</h2>
+          </div>
+          <div className="space-y-2">
+            {insights.map((frase, i) => (
+              <p key={i} className="text-[13px] text-[#B9C2CF] flex items-start gap-2 leading-relaxed">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C9A96E] inline-block mt-[7px] shrink-0" />
+                {frase}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* comissões por profissional */}
       {porProf.length > 0 && (
         <div className="mt-10">
@@ -603,7 +818,7 @@ export default function FinanceiroPage() {
       )}
 
       <p className="text-[11px] text-[#64748B] mt-8">
-        Comissão = valor do atendimento × % do profissional no momento do fechamento.
+        Comissão = valor do atendimento × % do profissional no momento do fechamento. Clientes novos = primeira visita dentro do período (base: últimos 180 dias).
       </p>
 
       {/* toast */}
