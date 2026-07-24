@@ -733,7 +733,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
               </div>
             </div>
           )}
-          <p className="text-[10px] text-[#64748B] mt-10 leading-relaxed">
+          <p className="text-[10px] text-[#64748B] mt-4 leading-relaxed">
             A forma é registrada na Agenda ao marcar um atendimento como pago. Atendimentos antigos aparecem como "Sem registro".
           </p>
         </div>
