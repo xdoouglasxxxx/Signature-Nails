@@ -1,39 +1,50 @@
-SIGNATURE • CONTRASTE + PERFIL DO PROFISSIONAL
-================================================
+SIGNATURE • EQUIPE + PERFIL DO PROFISSIONAL (VERSÃO FINAL)
+============================================================
 
-ARQUIVO 1: app/globals.css (substituir)
-Corrige o contraste dos selos e botões:
-- Chips "confirmado/pendente/pago/cancelado" da Agenda e do
-  Dashboard: viravam texto claro sobre fundo claro. Agora são
-  translúcidos escuros com texto vivo e borda (mesmo padrão do
-  Financeiro dark).
-- Botão Cancelar com vermelho mais legível.
-- Nomes (font-medium truncate) puxados para o pérola #F0EDE5.
+"TEM DOIS" — E É ASSIM MESMO ✓
+- app/painel/equipe/page.tsx        → a LISTA da equipe
+- app/painel/equipe/[id]/page.tsx   → o PERFIL de um profissional
+Os dois convivem; o [id] com colchetes é como o Next.js cria
+páginas dinâmicas (uma por profissional).
 
-ARQUIVO 2: app/painel/equipe/[id]/page.tsx (criar — pasta nova
-"[id]" dentro de app/painel/equipe, com colchetes mesmo)
-Página de perfil individual do profissional:
-- Cabeçalho com avatar, nome grande, % de comissão e os serviços
-  que ele realiza
-- 4 KPIs do mês: atendimentos, faturamento, comissão (com "a
-  pagar" em destaque) e ticket médio + tempo médio por atendimento
-- Próximos agendamentos (com status)
-- Clientes atendidos (distintos, com nº de visitas e total gasto)
-- Histórico recente (com a comissão de cada atendimento pago)
-- Atalho "Comissões e repasses" para o Financeiro
+DESCOBERTA IMPORTANTE (por isso esta versão substitui a v2):
+Seu sistema JÁ TINHA foto com upload (avatar_url), cargo (role)
+e jornada por dia (working_hours). Então:
+- O perfil agora usa o schema REAL: foto trocada por CLIQUE
+  (upload de arquivo, igual na Equipe), jornada com o mesmo
+  editor de dias da Equipe, cargo editável.
+- O SQL novo (11-perfil-v2.sql) cria SÓ o que falta de verdade:
+  folgas por data e avaliações.
 
-COMO ABRIR O PERFIL
-A página vive em /painel/equipe/SEU-ID-DO-PROFISSIONAL.
-Para o clique no card da Equipe levar até ela, na página
-app/painel/equipe/page.tsx envolva o card de cada profissional:
+COMO APLICAR
 
-  import Link from "next/link"
-  ...
-  <Link href={`/painel/equipe/${pr.id}`}> ...card... </Link>
+1) SUPABASE — rode sql/11-perfil-v2.sql
+   (Se você chegou a rodar o 11-perfil.sql antigo, sem problema:
+   o novo tem uma seção opcional comentada para limpar as colunas
+   redundantes.)
 
-Se preferir, me manda o page.tsx da Equipe que eu devolvo pronto
-com o clique + a hierarquia visual melhorada.
+2) GITHUB — substitua os DOIS arquivos:
+   - app/painel/equipe/page.tsx
+   - app/painel/equipe/[id]/page.tsx
 
-PRÓXIMA FASE (precisa de schema novo — aviso antes de criar):
-foto do profissional, horários de trabalho e folgas individuais,
-avaliações.
+O QUE MUDA NA PRÁTICA
+LISTA DA EQUIPE:
+- Nome maior e em destaque; clicar no nome (ou na setinha ›)
+  abre o perfil completo
+- Foto continua trocando pelo clique no avatar
+- Todo o resto intacto: criar/editar, comissões do mês, serviços,
+  horários, ativar/inativar, trava do plano Pro
+
+PERFIL DO PROFISSIONAL:
+- Foto com troca por clique (mesmo upload da Equipe)
+- Cargo + comissão + estrelas de avaliação + serviços no cabeçalho
+- 4 KPIs do mês, próximos agendamentos, clientes, histórico
+- Configurações: nome, cargo, comissão e jornada (mesmo editor
+  de dias da Equipe — respeitado nos agendamentos como já era)
+- Folgas por data (novo) e Avaliações (novo)
+
+AINDA PENDENTE (avisos honestos)
+- Folgas por data ainda não bloqueiam a página pública — preciso
+  do arquivo da página de agendamento do cliente para integrar.
+- Coleta de avaliações pelo cliente: próxima etapa (página pública).
+- Hierarquia do Dashboard e Clientes: me cola esses dois page.tsx.

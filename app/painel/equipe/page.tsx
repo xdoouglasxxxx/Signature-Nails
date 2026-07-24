@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase"
 import { useStudio } from "@/lib/useStudio"
 import { useCallback, useEffect, useState } from "react"
 import { format, startOfMonth } from "date-fns"
-import { Plus, Pencil, Loader2, Check, X, Camera, Wallet, Crown } from "lucide-react"
+import { Plus, Pencil, Loader2, Check, X, Camera, Wallet, Crown, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { statusPlano } from "@/lib/plan"
 import { brl, cn, DEFAULT_WH } from "@/lib/utils"
@@ -320,7 +320,7 @@ export default function EquipePage() {
         <div>
           <h1 className="text-2xl lg:text-3xl font-serif font-bold">Equipe</h1>
           <p className="text-sm text-navy/60 mt-1">
-            Cada profissional tem agenda própria. Seus clientes escolhem com quem agendar.
+            Cada profissional tem agenda própria. Toque em um nome para abrir o perfil completo.
           </p>
         </div>
         {editingId === null && (
@@ -337,10 +337,10 @@ export default function EquipePage() {
           editingId === p.id ? (
             <div key={p.id}>{FormCard}</div>
           ) : (
-            <div key={p.id} className={cn("bg-white rounded-2xl p-4 border border-gold/15", !p.active && "opacity-50")}>
+            <div key={p.id} className={cn("bg-white rounded-2xl p-4 border border-gold/15 transition-colors hover:border-gold/40", !p.active && "opacity-50")}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <label className="cursor-pointer relative shrink-0">
+                  <label className="cursor-pointer relative shrink-0" title="Trocar foto">
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadFoto(p, e.target.files?.[0] || null)} />
                     <div className="w-12 h-12 rounded-full gold-gradient p-[2px]">
                       {p.avatar_url ? (
@@ -353,14 +353,14 @@ export default function EquipePage() {
                       )}
                     </div>
                   </label>
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">{p.name}</p>
+                  <Link href={`/painel/equipe/${p.id}`} className="min-w-0 group">
+                    <p className="font-semibold text-[15px] truncate group-hover:text-gold transition-colors">{p.name}</p>
                     <p className="text-xs text-navy/60 truncate">
                       {p.role || "Profissional"} • comissão {Number(p.commission_percent)}%
                       {p.working_hours ? " • horário próprio" : ""}
                       {(mapa[p.id]?.length || 0) > 0 ? ` • ${mapa[p.id].length} serviço${mapa[p.id].length === 1 ? "" : "s"}` : " • todos os serviços"}
                     </p>
-                  </div>
+                  </Link>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="text-right mr-1">
@@ -375,6 +375,9 @@ export default function EquipePage() {
                     {p.active ? "Ativa" : "Inativa"}
                   </button>
                   <button onClick={() => startEdit(p)} className="p-2 rounded-full hover:bg-cream" aria-label="Editar"><Pencil className="w-4 h-4" /></button>
+                  <Link href={`/painel/equipe/${p.id}`} className="p-2 rounded-full hover:bg-cream" aria-label="Abrir perfil" title="Abrir perfil">
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                 </div>
               </div>
             </div>
