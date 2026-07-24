@@ -1,55 +1,28 @@
-SIGNATURE • FASE 4b — ALERTAS AUTOMÁTICOS (push/email sem abrir o painel)
-==========================================================================
+SIGNATURE • FINANCEIRO — CENTRAL DE FILTROS ESTILO TABELA
+           + FORMA DE PAGAMENTO RETROATIVA
+===========================================================
 
-O QUE É
-Um "agendador" (Vercel Cron) que roda TODO DIA às 08:00 (Brasília),
-analisa cada estúdio no servidor e envia:
-- PUSH para todos os aparelhos com notificação ativa (mesma infra
-  do push de agendamento que já funciona)
-- EMAIL para o dono (opcional, via Brevo)
+APLICAR: substituir app/painel/financeiro/page.tsx
+(esta versão JÁ INCLUI tudo do ERP + os ajustes abaixo — pode
+ignorar os zips financeiro-fix-filtros e financeiro-central-
+filtros anteriores).
 
-O QUE ELE AVISA (só envia se houver algo)
-• Resumo do dia: "Hoje: 4 atendimentos, o primeiro às 09:00 (João)"
-• Comissões pendentes há 7+ dias (com o valor)
-• Queda ≥20% no faturamento da semana vs semana anterior
-• Meta mensal a 90%+ ou ATINGIDA 🎉
-• Cancelamentos ≥20% na semana (com pelo menos 5 agendamentos)
+1) CENTRAL DE FILTROS — agora é uma janela organizada no MESMO
+   estilo da tabela que você elogiou (rótulo | conteúdo):
 
-ARQUIVOS (GitHub)
-1. vercel.json → RAIZ do repositório.
-   ⚠ Se já existir um vercel.json, NÃO substitua: só adicione o
-   bloco "crons" dentro do existente.
-2. app/api/alertas/route.ts → criar (pastas novas api/alertas).
+   PERÍODO    | Este mês · Últimos 7 dias · Mês passado
+   COMISSÕES  | Todos · A pagar · Pagas
+   EXPORTAR   | CSV · Excel · PDF
+   EQUIPE     | Toda a equipe · Rafael · Camila · ...
+   ───────────────────────────────────────────────
+   Mostrando: Este mês        [Quitar comissões exibidas]
 
-VARIÁVEIS DE AMBIENTE (Vercel → Settings → Environment Variables)
-Adicione e depois faça um REDEPLOY:
-1. CRON_SECRET → invente uma senha longa (ex.: 40 letras/números).
-   A Vercel usa automaticamente para proteger a rota.
-2. SUPABASE_SERVICE_ROLE_KEY → copie em Supabase → Settings → API
-   → "service_role" (a chave SECRETA, não a anon). Necessária para
-   o servidor ler os dados de todos os estúdios.
-3. VAPID_PRIVATE_KEY → o par privado da sua
-   NEXT_PUBLIC_VAPID_PUBLIC_KEY. Provavelmente JÁ EXISTE na Vercel
-   (a rota de push de agendamento usa). Se estiver com outro nome,
-   abra o route.ts e ajuste a linha marcada com >>> <<<.
-4. (opcional, para EMAIL) BREVO_API_KEY → chave de API do Brevo
-   (Configurações → SMTP & API → API Keys) e ALERTAS_EMAIL_FROM →
-   um remetente JÁ VALIDADO no seu Brevo. Sem essas duas, o sistema
-   envia só push (funciona igual).
+   Rótulos em caps na coluna esquerda (igual DATA/CLIENTE/...),
+   linhas separadas por traço dourado sutil, tudo dentro do card.
 
-TESTE NA HORA (sem esperar as 08:00)
-Abra no navegador:
-https://signaturebeauty.vercel.app/api/alertas?secret=SEU_CRON_SECRET
-→ responde um JSON com o resumo por estúdio e o push chega nos
-aparelhos com notificação ativa. Dica: defina uma meta mensal
-baixinha no Financeiro para ver o alerta de meta 🎉 no teste.
-
-OBSERVAÇÕES HONESTAS
-- Plano Hobby da Vercel permite cron 1x/dia — por isso o digest
-  matinal (é o formato certo mesmo: um resumo, não spam).
-- Alertas se repetem em dias seguidos enquanto a condição durar
-  (ex.: comissão pendente aparece todo dia até você quitar — é
-  proposital, funciona como cobrança gentil).
-- Se o push chegar "vazio" (sem texto), o formato do seu service
-  worker é diferente do padrão — me manda o public/sw.js que eu
-  alinho em 1 minuto.
+2) "SEM REGISTRO" TEM JEITO ✓ — cada linha da tabela agora tem um
+   seletor "forma?" embaixo do nome do cliente (no celular, uma
+   linha própria "Forma de pagamento"). Escolha Pix/Cartão/
+   Dinheiro/Outro nos atendimentos antigos e o gráfico de rosca
+   ganha as fatias na hora, sem recarregar. Os novos continuam
+   sendo registrados automaticamente pela Agenda ao marcar pago.

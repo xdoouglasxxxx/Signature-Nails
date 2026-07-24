@@ -344,6 +344,32 @@ export default function FinanceiroPage() {
     if (!error) setLinhas((prev) => prev.map((x) => (x.id === l.id ? { ...x, commission_paid: !l.commission_paid } : x)))
   }
 
+  const setFormaPagamento = async (l: any, metodo: string) => {
+    const v = metodo || null
+    const { error } = await supabase.from("appointments").update({ payment_method: v }).eq("id", l.id)
+    if (error) { notificar("Não foi possível salvar a forma."); return }
+    setLinhas((prev) => prev.map((x) => (x.id === l.id ? { ...x, payment_method: v } : x)))
+    if (v) notificar(`Forma registrada: ${FORMAS_LABEL[v]} ✓`)
+  }
+
+  const SelectForma = ({ l }: { l: any }) => (
+    <select
+      value={l.payment_method || ""}
+      onChange={(e) => setFormaPagamento(l, e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      className={cn(
+        "bg-[#0A0F1A] text-[10px] rounded-full border px-2 py-[2px] focus:outline-none focus:border-[#C9A96E]/50 cursor-pointer max-w-full",
+        l.payment_method ? "text-[#E8C989] border-[#C9A96E]/30" : "text-[#64748B] border-[#C9A96E]/15",
+      )}
+    >
+      <option value="">forma?</option>
+      <option value="pix">Pix</option>
+      <option value="cartao">Cartão</option>
+      <option value="dinheiro">Dinheiro</option>
+      <option value="outro">Outro</option>
+    </select>
+  )
+
   const addDespesa = async () => {
     const valor = parseFloat(String(novaDespesa.amount).replace(",", "."))
     if (!novaDespesa.category || isNaN(valor) || valor <= 0 || !novaDespesa.date) { notificar("Preencha categoria, valor e data."); return }
@@ -809,9 +835,11 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
         )}
       </div>
 
-      {/* filtros — duas linhas: períodos em cima, status + export embaixo */}
-      <div className="space-y-2.5 mb-4">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+      {/* central de filtros — organizada como a tabela (rótulo | opções) */}
+      <div className={cn("rounded-2xl px-4 md:px-6 py-1.5 mb-5", CARD)}>
+        <div className="grid grid-cols-[86px_1fr] items-center gap-3 py-3">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-[#64748B] font-semibold">Período</span>
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
           {PERIODOS.map((pp) => (
             <button
               key={pp.key}
@@ -826,9 +854,11 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
               {pp.label}
             </button>
           ))}
+          </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] uppercase tracking-[0.12em] text-[#64748B] font-semibold mr-1">Comissões</span>
+        <div className="grid grid-cols-[86px_1fr] items-center gap-3 py-3 border-t border-[#C9A96E]/[0.07]">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-[#64748B] font-semibold">Comissões</span>
+          <div className="flex items-center gap-2 flex-wrap">
           {STATUS_COMISSAO.map((st) => (
             <button
               key={st.key}
@@ -843,8 +873,11 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
               {st.label}
             </button>
           ))}
-          <span className="hidden sm:block w-px h-5 bg-[#C9A96E]/15 mx-1.5" />
-          <span className="text-[10px] uppercase tracking-[0.12em] text-[#64748B] font-semibold mr-1">Exportar</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-[86px_1fr] items-center gap-3 py-3 border-t border-[#C9A96E]/[0.07]">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-[#64748B] font-semibold">Exportar</span>
+          <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={exportarCSV}
             disabled={visiveis.length === 0}
@@ -866,12 +899,14 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
           >
             <FileText className="w-3.5 h-3.5 text-[#C9A96E]" /> PDF
           </button>
+          </div>
         </div>
-      </div>
 
       {/* filtro por profissional */}
       {equipe.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-5">
+        <div className="grid grid-cols-[86px_1fr] items-center gap-3 py-3 border-t border-[#C9A96E]/[0.07]">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-[#64748B] font-semibold">Equipe</span>
+          <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setProfFiltro("todos")}
             className={cn(
@@ -905,11 +940,12 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
               {primeiroNome(pr.name)}
             </button>
           ))}
+          </div>
         </div>
       )}
 
       {/* linha de contexto + quitação em lote */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-t border-[#C9A96E]/[0.07]">
         <p className="flex items-center gap-2 text-[12px] text-[#8896A8]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#C9A96E] inline-block" />
           Mostrando: <strong className="text-[#F0EDE5] font-medium">{rotuloPeriodo}</strong>
@@ -926,6 +962,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
             Quitar comissões exibidas ({brl(comissoesAPagar)})
           </button>
         )}
+      </div>
       </div>
 
       {/* tabela / cards */}
@@ -988,6 +1025,11 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
                       ))}
                     </div>
 
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] uppercase tracking-widest text-[#64748B]">Forma de pagamento</span>
+                      <SelectForma l={l} />
+                    </div>
+
                     {l.professionals?.name && (
                       <div className="flex items-center justify-between bg-[#0A0F1A] rounded-xl px-4 py-2.5 border border-[#C9A96E]/10">
                         <div className="flex items-center gap-2.5">
@@ -1009,7 +1051,10 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
                       <span className="text-[11px] font-semibold text-[#F0EDE5]">{fmtData(l.date)}</span>
                       <span className="text-[8px] text-[#8896A8] mt-0.5">{diaSemana(l.date)}</span>
                     </div>
-                    <div className="text-[13px] font-medium truncate text-[#F0EDE5]">{l.clients?.name || "—"}</div>
+                    <div className="min-w-0">
+                      <div className="text-[13px] font-medium truncate text-[#F0EDE5]">{l.clients?.name || "—"}</div>
+                      <div className="mt-0.5"><SelectForma l={l} /></div>
+                    </div>
                     <div className="flex items-center gap-2 text-[13px] text-[#B9C2CF] truncate">
                       <span className="w-6 h-6 rounded-full bg-[#0A0F1A] border border-[#C9A96E]/15 flex items-center justify-center shrink-0">{iconeServico(l.services?.name)}</span>
                       <span className="truncate">{l.services?.name || "—"}</span>
