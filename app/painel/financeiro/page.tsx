@@ -748,7 +748,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
           {totalDespesas > 0 && <span className="text-[13px] font-semibold text-[#F0A0A0]">{brl(totalDespesas)}</span>}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-[150px_1fr_120px_140px_auto_auto] gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-4">
           <select
             value={novaDespesa.category}
             onChange={(e) => setNovaDespesa({ ...novaDespesa, category: e.target.value })}
@@ -780,10 +780,10 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
             Fixa mensal
           </label>
           <button
-            onClick={addDespesa}
-            disabled={salvandoDespesa}
-            className="inline-flex items-center justify-center gap-1.5 bg-[#C9A96E] text-[#0A0F1A] rounded-xl px-4 py-2.5 text-[12px] font-semibold hover:bg-[#D4B87A] transition-colors disabled:opacity-60"
-          >
+  onClick={addDespesa}
+  disabled={salvandoDespesa}
+  className="inline-flex items-center justify-center gap-1.5 bg-[#C9A96E] text-[#0A0F1A] rounded-xl px-4 py-2.5 text- font-semibold hover:bg-[#D4B87A] transition-colors disabled:opacity-60 shrink-0 whitespace-nowrap"
+>
             {salvandoDespesa ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />} Adicionar
           </button>
         </div>
