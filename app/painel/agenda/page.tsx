@@ -7,6 +7,7 @@ import { format, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Check, X, DollarSign, Loader2, CalendarDays } from "lucide-react"
 import { brl, cn } from "@/lib/utils"
+import NovosAgendamentos from "@/components/NovosAgendamentos"
 
 const statusColors: any = {
   pendente: "bg-amber-100 text-amber-700",
@@ -48,6 +49,12 @@ export default function AgendaPage() {
   const [filtroProf, setFiltroProf] = useState<string>("todas")
 
   const dateStr = format(day, "yyyy-MM-dd")
+
+  // navegação vinda do sino de novos agendamentos ("yyyy-MM-dd" → Date local)
+  const irParaDia = (data: string) => {
+    const [a, m, d] = data.split("-").map(Number)
+    setDay(new Date(a, m - 1, d))
+  }
 
   const fetchDay = useCallback(async () => {
     if (!studio) return
@@ -136,9 +143,12 @@ export default function AgendaPage() {
           <h1 className="text-2xl lg:text-3xl font-serif font-bold">Agenda</h1>
           <p className="text-sm text-navy/60 mt-1">Gerencie os agendamentos do dia.</p>
         </div>
-        <div className="bg-white rounded-2xl px-4 py-2 border border-gold/15 text-right">
-          <p className="text-[10px] font-medium text-navy/60 tracking-wider uppercase">Recebido no dia</p>
-          <p className="text-lg font-bold">{brl(receitaDia)}</p>
+        <div className="flex items-center gap-3">
+          <NovosAgendamentos onIrParaDia={irParaDia} />
+          <div className="bg-white rounded-2xl px-4 py-2 border border-gold/15 text-right">
+            <p className="text-[10px] font-medium text-navy/60 tracking-wider uppercase">Recebido no dia</p>
+            <p className="text-lg font-bold">{brl(receitaDia)}</p>
+          </div>
         </div>
       </div>
 
