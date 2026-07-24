@@ -707,7 +707,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-
         </div>
 
         {/* formas de pagamento */}
-        <div className={cn("rounded-2xl p-5", CARD)}>
+        <div className={cn("rounded-2xl p-6 w-full", CARD)}>
           <h2 className="font-serif text-[18px] font-semibold text-[#F0EDE5] flex items-center gap-2 mb-4">
             <HandCoins className="w-4 h-4 text-[#C9A96E]" /> Formas de pagamento
           </h2>
