@@ -24,6 +24,10 @@ const STATUS_COMISSAO = [
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
+// paleta Ouro Edition
+const CARD = "bg-[#131E2E]/70 border border-[#C9A96E]/10"
+const CHIP_OFF = "bg-[#131E2E]/60 text-[#8896A8] border-[#C9A96E]/12 hover:border-[#C9A96E]/30"
+
 export default function FinanceiroPage() {
   const { studio, loading: loadingStudio } = useStudio()
   const supabase = createClient()
@@ -34,10 +38,9 @@ export default function FinanceiroPage() {
   const [periodo, setPeriodo] = useState("mes")
   const [profFiltro, setProfFiltro] = useState("todos")
   const [statusFiltro, setStatusFiltro] = useState("todos")
-  const [quitando, setQuitando] = useState<string | null>(null) // "todas" | id do profissional
+  const [quitando, setQuitando] = useState<string | null>(null)
   const [msg, setMsg] = useState("")
 
-  // ----- períodos -----
   const range = (p = periodo) => {
     const hoje = new Date()
     if (p === "7d") return { ini: format(subDays(hoje, 6), "yyyy-MM-dd"), fim: format(hoje, "yyyy-MM-dd") }
@@ -48,7 +51,6 @@ export default function FinanceiroPage() {
     return { ini: format(startOfMonth(hoje), "yyyy-MM-dd"), fim: format(endOfMonth(hoje), "yyyy-MM-dd") }
   }
 
-  // período equivalente anterior, para o comparativo do faturamento
   const rangeAnterior = () => {
     const hoje = new Date()
     if (periodo === "7d") return { ini: format(subDays(hoje, 13), "yyyy-MM-dd"), fim: format(subDays(hoje, 7), "yyyy-MM-dd") }
@@ -88,7 +90,6 @@ export default function FinanceiroPage() {
 
   useEffect(() => { fetchDados() }, [fetchDados])
 
-  // ----- cálculos -----
   const comissaoDe = (l: any) => {
     const pct = Number(l.professionals?.commission_percent || 0)
     return (l.price_at_time || 0) * pct / 100
@@ -108,11 +109,9 @@ export default function FinanceiroPage() {
   const lucro = faturamento - comissoesTotal
   const margem = faturamento > 0 ? (lucro / faturamento) * 100 : 0
 
-  // comparativo: período inteiro (sem filtros de prof/status) vs período anterior equivalente
   const fatPeriodoCheio = linhas.reduce((acc, l) => acc + (l.price_at_time || 0), 0)
   const delta = fatAnterior && fatAnterior > 0 ? ((fatPeriodoCheio - fatAnterior) / fatAnterior) * 100 : null
 
-  // resumo por profissional (respeita só o período, não os filtros)
   const porProf = equipe
     .map((pr) => {
       const doProf = linhas.filter((l) => l.professional_id === pr.id)
@@ -131,7 +130,6 @@ export default function FinanceiroPage() {
     })
     .filter((pr) => pr.servicos > 0)
 
-  // ----- ações -----
   const notificar = (texto: string) => { setMsg(texto); setTimeout(() => setMsg(""), 4000) }
 
   const quitarIds = async (ids: string[], chave: string, rotulo: string) => {
@@ -175,58 +173,54 @@ export default function FinanceiroPage() {
     URL.revokeObjectURL(url)
   }
 
-  // ----- helpers de exibição -----
   const fmtData = (d: string) => { const [, m, dia] = d.split("-"); return `${dia}/${m}` }
   const diaSemana = (d: string) => { const [a, m, dia] = d.split("-").map(Number); return DIAS[new Date(a, m - 1, dia).getDay()] }
   const iniciais = (nome?: string) => (nome || "—").split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
   const primeiroNome = (nome?: string) => (nome || "—").split(" ")[0]
   const iconeServico = (nome?: string) => {
     const s = (nome || "").toLowerCase()
-    if (s.includes("corte") || s.includes("barba")) return <Scissors className="w-3 h-3" />
-    return <Sparkles className="w-3 h-3" />
+    if (s.includes("corte") || s.includes("barba")) return <Scissors className="w-3 h-3 text-[#C9A96E]" />
+    return <Sparkles className="w-3 h-3 text-[#C9A96E]" />
   }
   const rotuloPeriodo = PERIODOS.find((pp) => pp.key === periodo)?.label
 
   if (loadingStudio || loading)
     return (
       <div className="flex justify-center pt-24">
-        <div className="w-8 h-8 border-4 border-[#1A2530] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#C9A96E] border-t-transparent rounded-full animate-spin" />
       </div>
     )
 
   return (
-    <div className="text-[#1A2530]">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
-        .font-serif-display { font-family: "Instrument Serif", Georgia, serif; }
-      `}</style>
-
+    <div className="text-[#F0EDE5]">
       {/* cabeçalho */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-serif-display text-[42px] md:text-[54px] leading-[0.9] tracking-[-0.02em]">Financeiro</h1>
-          <p className="mt-3 text-[15px] text-[#8A8A8A]">Controle de comissões e faturamento — só atendimentos pagos entram na conta.</p>
+          <h1 className="font-serif text-[38px] md:text-[46px] font-semibold leading-[1] tracking-[-0.01em] text-[#F0EDE5]">Financeiro</h1>
+          <p className="mt-2.5 text-[14px] text-[#8896A8]">Controle de comissões e faturamento — só atendimentos pagos entram na conta.</p>
         </div>
-        <div className="hidden md:flex items-center gap-2 text-[13px] text-[#8A8A8A] bg-white rounded-full px-4 py-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-[#F2E8D8]">
-          <CalendarDays className="w-4 h-4" />
+        <div className={cn("hidden md:flex items-center gap-2 text-[13px] text-[#8896A8] rounded-full px-4 py-2", CARD)}>
+          <CalendarDays className="w-4 h-4 text-[#C9A96E]" />
           <span>{fmtData(range().ini)} — {fmtData(range().fim)}</span>
-          <span className="w-1 h-1 rounded-full bg-[#D9CFC1] mx-1" />
-          <span className="text-[#1A2530] font-medium">{studio?.name}</span>
+          <span className="w-1 h-1 rounded-full bg-[#C9A96E]/40 mx-1" />
+          <span className="text-[#F0EDE5] font-medium">{studio?.name}</span>
         </div>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-8">
         {/* faturamento */}
-        <div className="bg-white rounded-[22px] p-6 md:p-7 shadow-[0_10px_30px_rgba(26,37,48,0.05)] border border-white">
-          <div className="flex items-start justify-between mb-8">
-            <div className="w-10 h-10 rounded-full bg-[#FDF6EE] flex items-center justify-center border border-[#F3E8D6]">
-              <Wallet className="w-[18px] h-[18px]" />
+        <div className={cn("rounded-2xl p-6", CARD)}>
+          <div className="flex items-start justify-between mb-7">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-[#C9A96E]/15 bg-[#C9A96E]/[0.07]">
+              <Wallet className="w-[18px] h-[18px] text-[#C9A96E]" />
             </div>
             {delta !== null && (
               <div className={cn(
-                "flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full",
-                delta >= 0 ? "bg-[#ECFDF5] text-[#065F46]" : "bg-[#FFF1E0] text-[#C76A15]",
+                "flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full border",
+                delta >= 0
+                  ? "bg-emerald-400/10 text-emerald-300 border-emerald-400/20"
+                  : "bg-orange-400/10 text-orange-300 border-orange-400/20",
               )}>
                 {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                 {delta >= 0 ? "+" : ""}{delta.toFixed(0)}% vs anterior
@@ -234,54 +228,60 @@ export default function FinanceiroPage() {
             )}
           </div>
           <div className="space-y-1">
-            <p className="text-[11px] uppercase tracking-[0.14em] text-[#A8A29E] font-medium">Faturamento no período</p>
-            <p className="font-serif-display text-[36px] leading-none tracking-[-0.02em]">{brl(faturamento)}</p>
-            <p className="text-[13px] text-[#9A9590] pt-1">{visiveis.length} serviço{visiveis.length === 1 ? "" : "s"} realizado{visiveis.length === 1 ? "" : "s"}</p>
+            <p className="text-[10px] uppercase tracking-[0.14em] text-[#8896A8] font-semibold">Faturamento no período</p>
+            <p className="font-serif text-[32px] font-semibold leading-none text-[#F0EDE5]">{brl(faturamento)}</p>
+            <p className="text-[13px] text-[#8896A8] pt-1">{visiveis.length} serviço{visiveis.length === 1 ? "" : "s"} realizado{visiveis.length === 1 ? "" : "s"}</p>
           </div>
         </div>
 
         {/* comissões a pagar */}
-        <div className="bg-white rounded-[22px] p-6 md:p-7 shadow-[0_10px_30px_rgba(26,37,48,0.05)] border border-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[120px] h-[120px] bg-[#FFF1E0] rounded-full -translate-y-8 translate-x-8 opacity-80" />
-          <div className="flex items-start justify-between mb-8 relative">
-            <div className="w-10 h-10 rounded-full bg-[#FFF4E6] flex items-center justify-center border border-[#FFE6C7]">
-              <div className={cn("w-2 h-2 rounded-full", pendentes.length > 0 ? "bg-[#FF8A2B] shadow-[0_0_0_4px_rgba(255,138,43,0.15)]" : "bg-[#10B981]")} />
+        <div className={cn("rounded-2xl p-6 relative overflow-hidden", CARD)}>
+          <div className="absolute -top-8 -right-8 w-[110px] h-[110px] bg-[#C9A96E]/[0.06] rounded-full" />
+          <div className="flex items-start justify-between mb-7 relative">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-[#C9A96E]/15 bg-[#C9A96E]/[0.07]">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                pendentes.length > 0 ? "bg-[#C9A96E] shadow-[0_0_12px_rgba(201,169,110,0.5)]" : "bg-emerald-400",
+              )} />
             </div>
             {pendentes.length > 0 && (
-              <span className="text-[11px] font-medium bg-[#FFF1E0] text-[#C76A15] px-2.5 py-1 rounded-full">
+              <span className="text-[11px] font-medium bg-[#C9A96E]/12 text-[#C9A96E] border border-[#C9A96E]/20 px-2.5 py-1 rounded-full">
                 {pendentes.length} pendente{pendentes.length === 1 ? "" : "s"}
               </span>
             )}
           </div>
           <div className="space-y-1 relative">
-            <p className="text-[11px] uppercase tracking-[0.14em] text-[#A8A29E] font-medium">Comissões a pagar</p>
-            <p className="font-serif-display text-[36px] leading-none tracking-[-0.02em]">{brl(comissoesAPagar)}</p>
-            <p className={cn("text-[13px] pt-1 font-medium", pendentes.length > 0 ? "text-[#E08A3A]" : "text-[#6B9F82]")}>
+            <p className="text-[10px] uppercase tracking-[0.14em] text-[#8896A8] font-semibold">Comissões a pagar</p>
+            <p className="font-serif text-[32px] font-semibold leading-none text-[#F0EDE5]">{brl(comissoesAPagar)}</p>
+            <p className={cn("text-[13px] pt-1 font-medium", pendentes.length > 0 ? "text-[#E8C989]" : "text-emerald-300")}>
               {pendentes.length > 0 ? `de ${brl(comissoesTotal)} geradas no período` : "Tudo quitado ✓"}
             </p>
           </div>
         </div>
 
         {/* lucro */}
-        <div className="bg-[#1A2530] rounded-[22px] p-6 md:p-7 shadow-[0_12px_32px_rgba(26,37,48,0.18)] relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-[160px] h-[160px] bg-[#223242] rounded-full opacity-60" />
-          <div className="flex items-start justify-between mb-8 relative">
-            <div className="w-10 h-10 rounded-full bg-[#233140] flex items-center justify-center border border-[#2A3B4F]">
+        <div
+          className="rounded-2xl p-6 relative overflow-hidden border border-[#C9A96E]/15"
+          style={{ background: "linear-gradient(145deg, rgba(19,30,46,0.9) 0%, rgba(10,15,26,0.95) 100%)" }}
+        >
+          <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-[40px] opacity-10 bg-[#C9A96E]" />
+          <div className="flex items-start justify-between mb-7 relative">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-[#C9A96E]/15 bg-[#C9A96E]/[0.07]">
               <PiggyBank className="w-[18px] h-[18px] text-[#A7F3D0]" />
             </div>
-            <span className="text-[11px] font-medium bg-[#233140] text-[#A7F3D0] px-2.5 py-1 rounded-full border border-[#2A3B4F]">Lucro líquido</span>
+            <span className="text-[11px] font-medium bg-[#C9A96E]/10 text-[#E8C989] px-2.5 py-1 rounded-full border border-[#C9A96E]/20">Lucro líquido</span>
           </div>
           <div className="space-y-1 relative">
-            <p className="text-[11px] uppercase tracking-[0.14em] text-[#8CA0B3] font-medium">Lucro do espaço</p>
-            <p className="font-serif-display text-[36px] leading-none tracking-[-0.02em] text-white">{brl(lucro)}</p>
+            <p className="text-[10px] uppercase tracking-[0.14em] text-[#8896A8] font-semibold">Lucro do espaço</p>
+            <p className="font-serif text-[32px] font-semibold leading-none text-[#F0EDE5]">{brl(lucro)}</p>
             <p className="text-[13px] text-[#7FBF9D] pt-1">{margem.toFixed(1).replace(".", ",")}% do faturamento</p>
           </div>
         </div>
       </div>
 
       {/* filtros */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-3">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 max-w-full">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 max-w-full scrollbar-none">
           {PERIODOS.map((pp) => (
             <button
               key={pp.key}
@@ -289,8 +289,8 @@ export default function FinanceiroPage() {
               className={cn(
                 "whitespace-nowrap px-5 py-2.5 rounded-full text-[13px] font-medium transition-all border shrink-0",
                 periodo === pp.key
-                  ? "bg-[#1A2530] text-white border-[#1A2530] shadow-[0_6px_18px_rgba(26,37,48,0.18)]"
-                  : "bg-white text-[#6B7280] border-[#F0E6D8] hover:border-[#1A2530]/20",
+                  ? "bg-[#C9A96E] text-[#0A0F1A] border-[#C9A96E] font-semibold shadow-[0_4px_20px_rgba(201,169,110,0.25)]"
+                  : CHIP_OFF,
               )}
             >
               {pp.label}
@@ -305,8 +305,8 @@ export default function FinanceiroPage() {
               className={cn(
                 "px-4 py-2 rounded-full text-[12px] font-medium transition-all border",
                 statusFiltro === st.key
-                  ? "bg-[#1A2530] text-white border-[#1A2530]"
-                  : "bg-white text-[#6B7280] border-[#F0E6D8] hover:border-[#1A2530]/20",
+                  ? "bg-[#C9A96E] text-[#0A0F1A] border-[#C9A96E] font-semibold"
+                  : CHIP_OFF,
               )}
             >
               {st.label}
@@ -315,9 +315,9 @@ export default function FinanceiroPage() {
           <button
             onClick={exportarCSV}
             disabled={visiveis.length === 0}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] font-medium border bg-white text-[#1A2530] border-[#F0E6D8] hover:border-[#1A2530]/30 disabled:opacity-40 transition-all"
+            className={cn("flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] font-medium border transition-all disabled:opacity-40", CHIP_OFF, "text-[#F0EDE5]")}
           >
-            <Download className="w-3.5 h-3.5" /> CSV
+            <Download className="w-3.5 h-3.5 text-[#C9A96E]" /> CSV
           </button>
         </div>
       </div>
@@ -329,7 +329,9 @@ export default function FinanceiroPage() {
             onClick={() => setProfFiltro("todos")}
             className={cn(
               "px-4 py-2 rounded-full text-[12px] font-medium border transition-all",
-              profFiltro === "todos" ? "bg-[#FFF4E6] border-[#FFE6C7] text-[#C76A15]" : "bg-white text-[#6B7280] border-[#F0E6D8]",
+              profFiltro === "todos"
+                ? "bg-[#C9A96E]/15 border-[#C9A96E]/40 text-[#E8C989]"
+                : CHIP_OFF,
             )}
           >
             Toda a equipe
@@ -340,12 +342,16 @@ export default function FinanceiroPage() {
               onClick={() => setProfFiltro(pr.id)}
               className={cn(
                 "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-all",
-                profFiltro === pr.id ? "bg-[#FFF4E6] border-[#FFE6C7] text-[#C76A15]" : "bg-white text-[#6B7280] border-[#F0E6D8]",
+                profFiltro === pr.id
+                  ? "bg-[#C9A96E]/15 border-[#C9A96E]/40 text-[#E8C989]"
+                  : CHIP_OFF,
               )}
             >
               <span className={cn(
-                "w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-semibold",
-                profFiltro === pr.id ? "bg-[#1A2530] text-white" : "bg-[#FDF6EE] text-[#1A2530] border border-[#F3E8D6]",
+                "w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold border",
+                profFiltro === pr.id
+                  ? "bg-[#C9A96E] text-[#0A0F1A] border-[#C9A96E]"
+                  : "bg-[#0A0F1A] text-[#F0EDE5] border-[#C9A96E]/20",
               )}>
                 {iniciais(pr.name)}
               </span>
@@ -357,17 +363,17 @@ export default function FinanceiroPage() {
 
       {/* linha de contexto + quitação em lote */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <p className="flex items-center gap-2 text-[12px] text-[#A8A29E]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#1A2530] inline-block" />
-          Mostrando: <strong className="text-[#1A2530] font-medium">{rotuloPeriodo}</strong>
-          {profFiltro !== "todos" && <> • {primeiroNome(equipe.find((e) => e.id === profFiltro)?.name)}</>}
-          {statusFiltro !== "todos" && <> • {STATUS_COMISSAO.find((s) => s.key === statusFiltro)?.label}</>}
+        <p className="flex items-center gap-2 text-[12px] text-[#8896A8]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#C9A96E] inline-block" />
+          Mostrando: <strong className="text-[#F0EDE5] font-medium">{rotuloPeriodo}</strong>
+          {profFiltro !== "todos" && <span className="text-[#F0EDE5]"> • {primeiroNome(equipe.find((e) => e.id === profFiltro)?.name)}</span>}
+          {statusFiltro !== "todos" && <span className="text-[#F0EDE5]"> • {STATUS_COMISSAO.find((s) => s.key === statusFiltro)?.label}</span>}
         </p>
         {comissoesAPagar > 0 && (
           <button
             onClick={quitarExibidas}
             disabled={quitando !== null}
-            className="inline-flex items-center justify-center gap-1.5 bg-[#1A2530] text-white rounded-full px-5 py-2.5 text-[12px] font-medium hover:bg-black transition-colors shadow-[0_6px_18px_rgba(26,37,48,0.18)] disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-1.5 bg-[#C9A96E] text-[#0A0F1A] rounded-full px-5 py-2.5 text-[12px] font-semibold hover:bg-[#D4B87A] transition-colors shadow-[0_4px_20px_rgba(201,169,110,0.25)] disabled:opacity-60"
           >
             {quitando === "todas" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
             Quitar comissões exibidas ({brl(comissoesAPagar)})
@@ -377,35 +383,35 @@ export default function FinanceiroPage() {
 
       {/* tabela / cards */}
       {visiveis.length === 0 ? (
-        <div className="bg-white rounded-[22px] p-10 border border-white shadow-[0_10px_30px_rgba(26,37,48,0.05)] text-center">
-          <p className="font-serif-display text-[22px]">Nada por aqui ainda</p>
-          <p className="text-[13px] text-[#9A9590] mt-1">Nenhum atendimento pago no período e filtros escolhidos.</p>
+        <div className={cn("rounded-2xl p-10 text-center", CARD)}>
+          <p className="font-serif text-[22px] font-semibold text-[#F0EDE5]">Nada por aqui ainda</p>
+          <p className="text-[13px] text-[#8896A8] mt-1">Nenhum atendimento pago no período e filtros escolhidos.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-[22px] shadow-[0_10px_40px_rgba(26,37,48,0.06)] border border-white overflow-hidden">
+        <div className={cn("rounded-2xl overflow-hidden", CARD)}>
           {/* cabeçalho desktop */}
-          <div className="hidden lg:grid grid-cols-[64px_1fr_1fr_150px_90px_100px_100px_150px] gap-2 px-7 py-4 border-b border-[#F6EFE6] bg-[#FFFEFB]">
+          <div className="hidden lg:grid grid-cols-[64px_1fr_1fr_150px_90px_100px_100px_150px] gap-2 px-6 py-4 border-b border-[#C9A96E]/[0.08] bg-[#0E1622]/80">
             {["Data", "Cliente", "Serviço", "Profissional", "Valor", "Comissão", "Lucro", "Status"].map((h, i) => (
-              <span key={h} className={cn("text-[11px] uppercase tracking-[0.12em] text-[#B8B0A6] font-medium", i >= 4 && i <= 6 && "text-right", i === 7 && "text-right pr-2")}>{h}</span>
+              <span key={h} className={cn("text-[10px] uppercase tracking-[0.14em] text-[#64748B] font-semibold", i >= 4 && i <= 6 && "text-right", i === 7 && "text-right pr-2")}>{h}</span>
             ))}
           </div>
 
-          <div className="divide-y divide-[#F7F0E7]">
+          <div className="divide-y divide-[#C9A96E]/[0.06]">
             {visiveis.map((l) => {
               const com = comissaoDe(l)
               return (
-                <div key={l.id} className="group px-4 md:px-7 py-4 lg:py-[14px] hover:bg-[#FFFEFB] transition-colors">
+                <div key={l.id} className="group px-4 md:px-6 py-4 lg:py-[14px] hover:bg-white/[0.03] transition-colors">
                   {/* mobile */}
                   <div className="lg:hidden space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-[12px] bg-[#FDF6EE] border border-[#F3E8D6] flex flex-col items-center justify-center leading-none">
-                          <span className="text-[13px] font-semibold">{fmtData(l.date).split("/")[0]}</span>
-                          <span className="text-[9px] text-[#A8A29E] uppercase mt-0.5">{diaSemana(l.date)}</span>
+                        <div className="w-11 h-11 rounded-xl bg-[#0A0F1A] border border-[#C9A96E]/15 flex flex-col items-center justify-center leading-none">
+                          <span className="text-[13px] font-semibold text-[#F0EDE5]">{fmtData(l.date).split("/")[0]}</span>
+                          <span className="text-[9px] text-[#8896A8] uppercase mt-0.5">{diaSemana(l.date)}</span>
                         </div>
                         <div>
-                          <p className="text-[14px] font-semibold leading-tight">{l.clients?.name || "—"}</p>
-                          <p className="text-[12px] text-[#8A8A8A] flex items-center gap-1 mt-0.5">
+                          <p className="text-[14px] font-medium leading-tight text-[#F0EDE5]">{l.clients?.name || "—"}</p>
+                          <p className="text-[12px] text-[#8896A8] flex items-center gap-1 mt-0.5">
                             {iconeServico(l.services?.name)} {l.services?.name || "—"}
                           </p>
                         </div>
@@ -413,7 +419,9 @@ export default function FinanceiroPage() {
                       {com > 0 && (
                         <span className={cn(
                           "text-[11px] font-medium px-2.5 py-1 rounded-full border",
-                          l.commission_paid ? "bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0]" : "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]",
+                          l.commission_paid
+                            ? "bg-emerald-400/10 text-emerald-300 border-emerald-400/25"
+                            : "bg-amber-400/10 text-amber-300 border-amber-400/25",
                         )}>
                           {l.commission_paid ? "Paga" : "A pagar"}
                         </span>
@@ -422,25 +430,25 @@ export default function FinanceiroPage() {
 
                     <div className="grid grid-cols-3 gap-2 text-[12px]">
                       {[
-                        ["Valor", brl(l.price_at_time || 0)],
-                        ["Comissão", com > 0 ? brl(com) : "—"],
-                        ["Lucro", brl((l.price_at_time || 0) - com)],
-                      ].map(([rot, val]) => (
-                        <div key={rot as string} className="bg-[#FDF8F2] border border-[#F6EFE6] rounded-[12px] px-3 py-2.5">
-                          <p className="text-[10px] uppercase tracking-widest text-[#B8B0A6]">{rot}</p>
-                          <p className="font-semibold mt-0.5">{val}</p>
+                        ["Valor", brl(l.price_at_time || 0), "text-[#F0EDE5]"],
+                        ["Comissão", com > 0 ? brl(com) : "—", "text-[#E8C989]"],
+                        ["Lucro", brl((l.price_at_time || 0) - com), "text-[#7FBF9D]"],
+                      ].map(([rot, val, cor]) => (
+                        <div key={rot as string} className="bg-[#0A0F1A] border border-[#C9A96E]/10 rounded-xl px-3 py-2.5">
+                          <p className="text-[9px] uppercase tracking-widest text-[#64748B]">{rot}</p>
+                          <p className={cn("font-semibold mt-0.5", cor as string)}>{val}</p>
                         </div>
                       ))}
                     </div>
 
                     {l.professionals?.name && (
-                      <div className="flex items-center justify-between bg-[#FDF8F2] rounded-[14px] px-4 py-2.5 border border-[#F6EFE6]">
+                      <div className="flex items-center justify-between bg-[#0A0F1A] rounded-xl px-4 py-2.5 border border-[#C9A96E]/10">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-[#1A2530] text-white flex items-center justify-center text-[10px] font-medium">{iniciais(l.professionals.name)}</div>
-                          <p className="text-[13px] font-medium">{primeiroNome(l.professionals.name)} <span className="text-[#8A8A8A]">• {Number(l.professionals.commission_percent)}%</span></p>
+                          <div className="w-7 h-7 rounded-full bg-[#C9A96E] text-[#0A0F1A] flex items-center justify-center text-[10px] font-bold">{iniciais(l.professionals.name)}</div>
+                          <p className="text-[13px] font-medium text-[#F0EDE5]">{primeiroNome(l.professionals.name)} <span className="text-[#8896A8]">• {Number(l.professionals.commission_percent)}%</span></p>
                         </div>
                         {com > 0 && (
-                          <button onClick={() => toggleLinha(l)} className="text-[12px] font-medium text-[#1A2530] underline underline-offset-2">
+                          <button onClick={() => toggleLinha(l)} className="text-[12px] font-medium text-[#C9A96E] underline underline-offset-2">
                             {l.commission_paid ? "Desfazer" : "Marcar paga"}
                           </button>
                         )}
@@ -450,31 +458,31 @@ export default function FinanceiroPage() {
 
                   {/* desktop */}
                   <div className="hidden lg:grid grid-cols-[64px_1fr_1fr_150px_90px_100px_100px_150px] gap-2 items-center">
-                    <div className="w-9 h-9 rounded-[10px] bg-[#FDF6EE] border border-[#F3E8D6] flex flex-col items-center justify-center leading-[1]">
-                      <span className="text-[12px] font-semibold">{fmtData(l.date)}</span>
-                      <span className="text-[9px] text-[#A8A29E] mt-0.5">{diaSemana(l.date)}</span>
+                    <div className="w-9 h-9 rounded-[10px] bg-[#0A0F1A] border border-[#C9A96E]/15 flex flex-col items-center justify-center leading-[1]">
+                      <span className="text-[11px] font-semibold text-[#F0EDE5]">{fmtData(l.date)}</span>
+                      <span className="text-[8px] text-[#8896A8] mt-0.5">{diaSemana(l.date)}</span>
                     </div>
-                    <div className="text-[13px] font-medium truncate">{l.clients?.name || "—"}</div>
-                    <div className="flex items-center gap-2 text-[13px] text-[#4B5563] truncate">
-                      <span className="w-6 h-6 rounded-full bg-[#FDF6EE] border border-[#F3E8D6] flex items-center justify-center shrink-0">{iconeServico(l.services?.name)}</span>
+                    <div className="text-[13px] font-medium truncate text-[#F0EDE5]">{l.clients?.name || "—"}</div>
+                    <div className="flex items-center gap-2 text-[13px] text-[#B9C2CF] truncate">
+                      <span className="w-6 h-6 rounded-full bg-[#0A0F1A] border border-[#C9A96E]/15 flex items-center justify-center shrink-0">{iconeServico(l.services?.name)}</span>
                       <span className="truncate">{l.services?.name || "—"}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {l.professionals?.name ? (
                         <>
-                          <div className="w-7 h-7 rounded-full bg-[#1A2530] text-white flex items-center justify-center text-[10px] font-medium shrink-0">{iniciais(l.professionals.name)}</div>
+                          <div className="w-7 h-7 rounded-full bg-[#C9A96E] text-[#0A0F1A] flex items-center justify-center text-[10px] font-bold shrink-0">{iniciais(l.professionals.name)}</div>
                           <div className="leading-tight min-w-0">
-                            <p className="text-[13px] font-medium truncate">{primeiroNome(l.professionals.name)}</p>
-                            <p className="text-[11px] text-[#9CA3AF]">{Number(l.professionals.commission_percent)}% com.</p>
+                            <p className="text-[13px] font-medium truncate text-[#F0EDE5]">{primeiroNome(l.professionals.name)}</p>
+                            <p className="text-[11px] text-[#8896A8]">{Number(l.professionals.commission_percent)}% com.</p>
                           </div>
                         </>
                       ) : (
-                        <span className="text-[#9CA3AF] text-[13px]">—</span>
+                        <span className="text-[#64748B] text-[13px]">—</span>
                       )}
                     </div>
-                    <div className="text-[13px] font-semibold text-right">{brl(l.price_at_time || 0)}</div>
-                    <div className="text-[13px] font-medium text-right text-[#92400E]">{com > 0 ? brl(com) : <span className="text-[#D9CFC1]">—</span>}</div>
-                    <div className="text-[13px] font-semibold text-right text-[#065F46]">{brl((l.price_at_time || 0) - com)}</div>
+                    <div className="text-[13px] font-semibold text-right text-[#F0EDE5]">{brl(l.price_at_time || 0)}</div>
+                    <div className="text-[13px] font-medium text-right text-[#E8C989]">{com > 0 ? brl(com) : <span className="text-[#3D4A5C]">—</span>}</div>
+                    <div className="text-[13px] font-semibold text-right text-[#7FBF9D]">{brl((l.price_at_time || 0) - com)}</div>
                     <div className="flex justify-end pr-2">
                       {com > 0 ? (
                         <button
@@ -483,15 +491,15 @@ export default function FinanceiroPage() {
                           className={cn(
                             "inline-flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-full border transition-colors",
                             l.commission_paid
-                              ? "bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0] hover:bg-[#A7F3D0]/50"
-                              : "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A] hover:bg-[#FDE68A]/60",
+                              ? "bg-emerald-400/10 text-emerald-300 border-emerald-400/25 hover:bg-emerald-400/20"
+                              : "bg-amber-400/10 text-amber-300 border-amber-400/25 hover:bg-amber-400/20",
                           )}
                         >
-                          <span className={cn("w-1.5 h-1.5 rounded-full", l.commission_paid ? "bg-[#10B981]" : "bg-[#F59E0B]")} />
+                          <span className={cn("w-1.5 h-1.5 rounded-full", l.commission_paid ? "bg-emerald-400" : "bg-amber-400")} />
                           {l.commission_paid ? "Paga ✓" : "A pagar"}
                         </button>
                       ) : (
-                        <span className="text-[#D9CFC1] text-[11px]">sem comissão</span>
+                        <span className="text-[#3D4A5C] text-[11px]">sem comissão</span>
                       )}
                     </div>
                   </div>
@@ -500,7 +508,7 @@ export default function FinanceiroPage() {
             })}
           </div>
 
-          <div className="px-5 md:px-7 py-3.5 bg-[#FFFEFB] border-t border-[#F6EFE6] text-[12px] text-[#9CA3AF]">
+          <div className="px-5 md:px-6 py-3.5 bg-[#0E1622]/80 border-t border-[#C9A96E]/[0.08] text-[12px] text-[#64748B]">
             {visiveis.length} atendimento{visiveis.length === 1 ? "" : "s"} • toque no selo de status para alternar um atendimento específico
           </div>
         </div>
@@ -510,72 +518,79 @@ export default function FinanceiroPage() {
       {porProf.length > 0 && (
         <div className="mt-10">
           <div className="flex items-baseline gap-3 mb-5">
-            <h2 className="font-serif-display text-[26px] md:text-[30px] tracking-[-0.01em]">Comissões por profissional</h2>
-            <span className="text-[12px] text-[#A8A29E] bg-white border border-[#F0E6D8] px-2.5 py-1 rounded-full">{rotuloPeriodo}</span>
+            <h2 className="font-serif text-[26px] md:text-[30px] font-semibold text-[#F0EDE5]">Comissões por profissional</h2>
+            <span className={cn("text-[12px] text-[#8896A8] px-2.5 py-1 rounded-full", CARD)}>{rotuloPeriodo}</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
             {porProf.map((pr) => {
               const pctQuitado = pr.comissao > 0 ? ((pr.comissao - pr.aPagar) / pr.comissao) * 100 : 100
               return (
-                <div key={pr.id} className="bg-white rounded-[22px] p-6 md:p-7 shadow-[0_8px_24px_rgba(26,37,48,0.06)] border border-white">
+                <div key={pr.id} className={cn("rounded-2xl p-6", CARD)}>
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-full bg-[#1A2530] text-white flex items-center justify-center font-medium text-[14px]">{iniciais(pr.name)}</div>
+                      <div className="w-12 h-12 rounded-full bg-[#C9A96E] text-[#0A0F1A] flex items-center justify-center font-bold text-[14px]">{iniciais(pr.name)}</div>
                       <div>
-                        <p className="font-semibold text-[15px] leading-tight">{pr.name}</p>
-                        <p className="text-[12px] text-[#8A8A8A] mt-0.5">Comissão {Number(pr.commission_percent)}%</p>
+                        <p className="font-semibold text-[15px] leading-tight text-[#F0EDE5]">{pr.name}</p>
+                        <p className="text-[12px] text-[#8896A8] mt-0.5">Comissão {Number(pr.commission_percent)}%</p>
                       </div>
                     </div>
                     <span className={cn(
                       "inline-flex items-center gap-1.5 text-[11px] font-medium px-3 py-1 rounded-full border",
-                      pr.aPagar > 0 ? "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]" : "bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0]",
+                      pr.aPagar > 0
+                        ? "bg-amber-400/10 text-amber-300 border-amber-400/25"
+                        : "bg-emerald-400/10 text-emerald-300 border-emerald-400/25",
                     )}>
-                      <span className={cn("w-1.5 h-1.5 rounded-full", pr.aPagar > 0 ? "bg-[#F59E0B]" : "bg-[#10B981]")} />
+                      <span className={cn("w-1.5 h-1.5 rounded-full", pr.aPagar > 0 ? "bg-amber-400" : "bg-emerald-400")} />
                       {pr.aPagar > 0 ? `${brl(pr.aPagar)} a pagar` : "Em dia"}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 mb-6">
-                    <div className="bg-[#FDF8F2] rounded-[14px] p-3.5 border border-[#F6EFE6]">
-                      <p className="text-[10px] uppercase tracking-widest text-[#B8B0A6]">Serviços</p>
-                      <p className="font-serif-display text-[20px] leading-none mt-1.5">{pr.servicos}</p>
-                      <p className="text-[11px] text-[#8A8A8A] mt-1">no período</p>
+                    <div className="bg-[#0A0F1A] rounded-xl p-3.5 border border-[#C9A96E]/10">
+                      <p className="text-[9px] uppercase tracking-widest text-[#64748B]">Serviços</p>
+                      <p className="font-serif text-[20px] font-semibold leading-none mt-1.5 text-[#F0EDE5]">{pr.servicos}</p>
+                      <p className="text-[11px] text-[#8896A8] mt-1">no período</p>
                     </div>
-                    <div className="bg-[#FDF8F2] rounded-[14px] p-3.5 border border-[#F6EFE6]">
-                      <p className="text-[10px] uppercase tracking-widest text-[#B8B0A6]">Comissão</p>
-                      <p className="font-serif-display text-[20px] leading-none mt-1.5">{brl(pr.comissao)}</p>
-                      <p className="text-[11px] text-[#8A8A8A] mt-1">de {brl(pr.faturamento)}</p>
+                    <div className="bg-[#0A0F1A] rounded-xl p-3.5 border border-[#C9A96E]/10">
+                      <p className="text-[9px] uppercase tracking-widest text-[#64748B]">Comissão</p>
+                      <p className="font-serif text-[20px] font-semibold leading-none mt-1.5 text-[#E8C989]">{brl(pr.comissao)}</p>
+                      <p className="text-[11px] text-[#8896A8] mt-1">de {brl(pr.faturamento)}</p>
                     </div>
-                    <div className="bg-[#1A2530] rounded-[14px] p-3.5 text-white">
-                      <p className="text-[10px] uppercase tracking-widest text-[#8CA0B3]">Ticket médio</p>
-                      <p className="font-serif-display text-[20px] leading-none mt-1.5">{brl(pr.ticket)}</p>
-                      <p className="text-[11px] text-[#7FBF9D] mt-1">por serviço</p>
+                    <div className="rounded-xl p-3.5 border border-[#C9A96E]/25 bg-[#C9A96E]/[0.09]">
+                      <p className="text-[9px] uppercase tracking-widest text-[#C9A96E]/70">Ticket médio</p>
+                      <p className="font-serif text-[20px] font-semibold leading-none mt-1.5 text-[#E8C989]">{brl(pr.ticket)}</p>
+                      <p className="text-[11px] text-[#8896A8] mt-1">por serviço</p>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-[12px]">
-                      <span className="text-[#8A8A8A]">Comissões quitadas</span>
-                      <span className="font-medium">{brl(pr.comissao - pr.aPagar)} / {brl(pr.comissao)}</span>
+                      <span className="text-[#8896A8]">Comissões quitadas</span>
+                      <span className="font-medium text-[#F0EDE5]">{brl(pr.comissao - pr.aPagar)} / {brl(pr.comissao)}</span>
                     </div>
-                    <div className="h-2 bg-[#F6EFE6] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
                       <div
-                        className={cn("h-full rounded-full transition-all", pctQuitado >= 100 ? "bg-[#10B981]" : "bg-[#FF8A2B]")}
-                        style={{ width: `${Math.min(pctQuitado, 100)}%` }}
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${Math.min(pctQuitado, 100)}%`,
+                          background: pctQuitado >= 100
+                            ? "linear-gradient(90deg, #34D399, #6EE7B7)"
+                            : "linear-gradient(90deg, #C9A96E, #E8D5A3)",
+                        }}
                       />
                     </div>
                     {pr.aPagar > 0 ? (
                       <button
                         onClick={() => quitarDoProf(pr)}
                         disabled={quitando !== null}
-                        className="w-full inline-flex items-center justify-center gap-1.5 bg-[#1A2530] text-white rounded-full py-3 text-[13px] font-medium hover:bg-black transition-colors shadow-[0_6px_18px_rgba(26,37,48,0.18)] disabled:opacity-60"
+                        className="w-full inline-flex items-center justify-center gap-1.5 bg-[#C9A96E] text-[#0A0F1A] rounded-full py-3 text-[13px] font-semibold hover:bg-[#D4B87A] transition-colors shadow-[0_4px_20px_rgba(201,169,110,0.2)] disabled:opacity-60"
                       >
                         {quitando === pr.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                         Pagar tudo de {primeiroNome(pr.name)} ({brl(pr.aPagar)})
                       </button>
                     ) : (
-                      <div className="flex items-center justify-center gap-2 text-[12px] text-[#6B9F82] bg-[#ECFDF5] border border-[#D1FAE5] rounded-full py-2.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                      <div className="flex items-center justify-center gap-2 text-[12px] text-emerald-300 bg-emerald-400/10 border border-emerald-400/20 rounded-full py-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                         Comissões quitadas no período
                       </div>
                     )}
@@ -587,13 +602,13 @@ export default function FinanceiroPage() {
         </div>
       )}
 
-      <p className="text-[11px] text-[#B8B0A6] mt-8">
+      <p className="text-[11px] text-[#64748B] mt-8">
         Comissão = valor do atendimento × % do profissional no momento do fechamento.
       </p>
 
       {/* toast */}
       {msg && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 bg-[#1A2530] text-white text-[13px] px-5 py-2.5 rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.2)] z-50">
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 bg-[#C9A96E] text-[#0A0F1A] text-[13px] font-semibold px-5 py-2.5 rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.4)] z-50">
           {msg}
         </div>
       )}

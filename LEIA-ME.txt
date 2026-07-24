@@ -1,40 +1,18 @@
-SIGNATURE • TEMA DARK "OURO EDITION" — FASE 1 (Fundação)
-=========================================================
+SIGNATURE • FINANCEIRO DARK (Ouro Edition)
+===========================================
 
-O QUE ESTE ZIP FAZ
-Transforma o PAINEL INTEIRO no tema escuro premium (navy profundo
-#0A0F1A + ouro champagne #C9A96E) em um único deploy:
+O problema: o Financeiro v2 usava cores fixas do tema creme
+(texto tinta #1A2530, chips #FDF6EE), que ficaram ilegíveis
+dentro do painel escuro.
 
-1. Sidebar nova no estilo do mockup: fundo escuro, link ativo com
-   traço dourado à esquerda, logo "SIGNATURE / STUDIO OS", card do
-   estúdio no rodapé com bolinha dourada de status.
-2. Escopo .theme-dark no globals.css: traduz automaticamente os
-   tokens claros das páginas existentes (bg-white → card escuro
-   com vidro, bg-cream → fundo ink, text-navy → pérola, botões
-   navy → ouro com texto escuro etc). Todas as páginas do painel
-   escurecem juntas, sem editar cada uma.
-3. Formulários, estados (esmeralda/vermelho) e scrollbar ajustados
-   para o escuro.
+Esta versão é o mesmo Financeiro (mesma lógica: comparativo,
+filtros, quitar em lote, pagar por profissional, CSV, toast),
+reescrito nativamente na paleta dark:
+- Números principais em pérola #F0EDE5 (legíveis)
+- Comissões em ouro champagne, lucro em verde suave
+- Botões de ação em ouro sólido com texto escuro
+- Selos A pagar / Paga em âmbar/esmeralda translúcidos
+- Fonte serifada da marca (Cormorant) nos títulos e valores
 
-ARQUIVOS (substituir nos mesmos caminhos)
-- tailwind.config.js          (raiz do repo)
-- app/globals.css             
-- app/painel/layout.tsx       
-
-NÃO MUDA NADA DE LÓGICA: plano/trial, bloqueio por expiração,
-push notifications e menu mobile seguem idênticos. As páginas
-públicas (landing, /estudio-lume, login) NÃO são afetadas —
-o tema vale só dentro do painel.
-
-OBSERVAÇÕES
-- O Financeiro v2 usa cores fixas (creme) em vez de tokens, então
-  ele fica "meio claro" dentro do tema escuro. É a primeira página
-  do passe fino da Fase 2 — me pede que eu já mando a versão dark.
-- Se alguma página específica exibir texto apagado ou chip estranho,
-  me manda o print que eu ajusto o seletor no globals.css.
-
-PRÓXIMAS FASES
-Fase 2: Dashboard no layout do mockup (card do link de agendamento,
-        4 KPIs, ocupação da semana) + Financeiro dark.
-Fase 3: Agenda dark com o sino integrado.
-Fase 4: demais páginas (passe fino).
+APLICAR: substituir app/painel/financeiro/page.tsx pelo deste zip.
+Sem SQL, sem dependência nova.
